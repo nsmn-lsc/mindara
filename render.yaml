@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: mindara
+    env: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate --noinput
+    startCommand: gunicorn core.wsgi:application --log-file - --timeout 120 --workers=3
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: core.settings
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: DB_ENGINE
+        value: django.db.backends.postgresql
+      - key: DB_NAME
+        fromDatabase: true
+        name: mindara-db
+        property: database
+      - key: DB_USER
+        fromDatabase: true
+        name: mindara-db
+        property: user
+      - key: DB_PASSWORD
+        fromDatabase: true
+        name: mindara-db
+        property: password
+      - key: DB_HOST
+        fromDatabase: true
+        name: mindara-db
+        property: host
+      - key: DB_PORT
+        fromDatabase: true
+        name: mindara-db
+        property: port
+    autoDeploy: true
+
+databases:
+  - name: mindara-db
+    plan: free

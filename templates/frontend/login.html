@@ -1,0 +1,349 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% block title %}Iniciar Sesión - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="card">
+            <div class="card-header text-center">
+                <div class="mb-3">
+               
+                    <img src="{% static 'img/logo_blanco.png' %}" alt="Mindara Logo" class="auth-logo" width="600">
+
+                </div>
+                <h3 class="mb-0 text-white">Login</h3>
+                <p class="mb-0 text-white opacity-75">Sistema de Autenticación</p>
+            </div>
+            
+            <div class="card-body">
+                <form id="loginForm" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>
+                            Correo Electrónico
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            autocomplete="email"
+                            placeholder="tu-email@ejemplo.com"
+                        >
+                        <div class="form-error" id="emailError"></div>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-1"></i>
+                            Contraseña
+                        </label>
+                        <div class="position-relative">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="password" 
+                                name="password" 
+                                required 
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                            >
+                            <button 
+                                type="button" 
+                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y pe-3" 
+                                id="togglePassword"
+                                style="border: none; background: none; color: var(--text-primary);"
+                            >
+                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                        <div class="form-error" id="passwordError"></div>
+                    </div>
+                    
+                    <!-- Remember Me -->
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                                <label class="form-check-label" for="rememberMe">
+                                    Recordarme
+                                </label>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                            <span id="loginBtnText">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Iniciar Sesión
+                            </span>
+                            <span id="loginBtnLoading" style="display: none;">
+                                <span class="spinner me-2"></span>
+                                Iniciando sesión...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-center">
+                <p class="mb-0 text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Solo usuarios autorizados pueden acceder al sistema
+                </p>
+                <small class="text-muted">
+                    Si necesitas acceso, contacta al administrador del sistema
+                </small>
+                <small class="text-muted">
+                    escribiendo a la direccion de correo develop.serve010@passinbox.com
+                </small>
+            </div>
+        </div>
+        
+        <!-- Demo Users Info (solo en desarrollo) -->
+        {% if debug %}
+        <div class="demo-users-card">
+            <div class="card-header">
+                <h6>
+                    <i class="fas fa-flask me-2"></i>
+                    Usuarios de Demostración
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="demo-user-item">
+                            <strong class="text-danger">ADMIN</strong>
+                            <small>admin@mindara.com</small>
+                            <span class="badge badge-admin">Administrador</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="demo-user-item">
+                            <strong class="text-warning">MANAGER</strong>
+                            <small>manager@mindara.com</small>
+                            <span class="badge badge-manager">Gestor</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="demo-user-item">
+                            <strong class="text-info">USER</strong>
+                            <small>usuario@mindara.com</small>
+                            <span class="badge badge-user">Usuario</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: var(--space-4); text-align: center;">
+                    <small class="text-muted">
+                        <i class="fas fa-key me-1"></i>
+                        Contraseña para todos: <code>admin123</code>
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginBtnText = document.getElementById('loginBtnText');
+    const loginBtnLoading = document.getElementById('loginBtnLoading');
+    
+    // Toggle password visibility
+    togglePasswordBtn.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        if (type === 'text') {
+            togglePasswordIcon.classList.remove('fa-eye');
+            togglePasswordIcon.classList.add('fa-eye-slash');
+        } else {
+            togglePasswordIcon.classList.remove('fa-eye-slash');
+            togglePasswordIcon.classList.add('fa-eye');
+        }
+    });
+    
+    // Form submission
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Get form data
+        const formData = {
+            email: emailInput.value.trim(),
+            password: passwordInput.value
+        };
+        
+        // Basic validation
+        if (!formData.email) {
+            showFieldError('email', 'El email es requerido');
+            return;
+        }
+        
+        if (!formData.password) {
+            showFieldError('password', 'La contraseña es requerida');
+            return;
+        }
+        
+        // Show loading state
+        setLoadingState(true);
+        
+        try {
+            const response = await makeAPICall('/login-api/', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+            
+            if (response.success) {
+                showAlert('¡Login exitoso! Redirigiendo...', 'success');
+                
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = response.redirect_url || '/dashboard/';
+                }, 1000);
+            } else {
+                showAlert(response.message || 'Error al iniciar sesión', 'danger');
+            }
+            
+        } catch (error) {
+            console.error('Login error:', error);
+            showAlert(error.message || 'Error de conexión. Intenta nuevamente.', 'danger');
+        } finally {
+            setLoadingState(false);
+        }
+    });
+    
+    // Auto-fill demo credentials (solo en desarrollo)
+    {% if debug %}
+    // Agregar event listeners para auto-completar credenciales de demo
+    const demoCards = document.querySelectorAll('.demo-user-item');
+    demoCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const email = this.querySelector('small').textContent;
+            emailInput.value = email;
+            passwordInput.value = 'admin123';
+            
+            // Visual feedback mejorado
+            card.style.background = 'var(--accent-1)';
+            card.style.color = 'white';
+            card.style.transform = 'scale(0.98)';
+            
+            setTimeout(() => {
+                card.style.background = '';
+                card.style.color = '';
+                card.style.transform = '';
+            }, 200);
+        });
+    });
+    {% endif %}
+    
+    function setLoadingState(loading) {
+        if (loading) {
+            loginBtn.disabled = true;
+            loginBtnText.style.display = 'none';
+            loginBtnLoading.style.display = 'inline';
+            loginForm.classList.add('loading');
+        } else {
+            loginBtn.disabled = false;
+            loginBtnText.style.display = 'inline';
+            loginBtnLoading.style.display = 'none';
+            loginForm.classList.remove('loading');
+        }
+    }
+    
+    function clearErrors() {
+        document.querySelectorAll('.form-error').forEach(error => {
+            error.textContent = '';
+        });
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.classList.remove('error');
+        });
+    }
+    
+    function showFieldError(fieldName, message) {
+        const field = document.getElementById(fieldName);
+        const errorElement = document.getElementById(fieldName + 'Error');
+        
+        if (field) field.classList.add('error');
+        if (errorElement) errorElement.textContent = message;
+    }
+});
+
+function showForgotPassword() {
+    showAlert('Contacta al administrador del sistema para recuperar tu contraseña', 'info');
+}
+
+// Función para mostrar alertas
+function showAlert(message, type = 'info') {
+    const alertContainer = document.createElement('div');
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(alertContainer.firstElementChild);
+    
+    // Auto-dismiss después de 5 segundos
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+// Función para llamadas AJAX
+async function makeAPICall(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.MINDARA.csrfToken
+        }
+    };
+    
+    const finalOptions = { ...defaultOptions, ...options };
+    if (finalOptions.headers) {
+        finalOptions.headers = { ...defaultOptions.headers, ...options.headers };
+    }
+    
+    try {
+        const response = await fetch(url, finalOptions);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Error en la petición');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
+}
+</script>
+{% endblock %}

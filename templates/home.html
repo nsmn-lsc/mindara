@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <meta name="description" content="{{ description }}">
+    
+    <!-- Bootstrap CSS para un diseño rápido y responsivo -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-section {
+            padding: 80px 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .api-endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .footer {
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 40px 0;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-shield-alt me-3"></i>
+                        Mindara
+                    </h1>
+                    <p class="lead mb-4">{{ description }}</p>
+                    <div class="mb-4">
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle me-1"></i>
+                            API Activa
+                        </span>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="/admin/" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-cog me-2"></i>
+                            Panel Admin
+                        </a>
+                        <a href="/api-auth/" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-code me-2"></i>
+                            API Browser
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center mb-5">
+                    <h2 class="text-white">Características del Sistema</h2>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">3 Niveles de Usuario</h5>
+                            <p class="card-text">
+                                Sistema jerárquico con permisos granulares:
+                                <strong>ADMIN</strong>, <strong>MANAGER</strong> y <strong>USER</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-key fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Autenticación JWT</h5>
+                            <p class="card-text">
+                                Tokens seguros con renovación automática.
+                                Sesiones de 60 minutos con refresh de 7 días.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-api fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">API REST Completa</h5>
+                            <p class="card-text">
+                                Endpoints para registro, login, gestión de usuarios
+                                y perfiles. Lista para integrar con React.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Endpoints Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">
+                                <i class="fas fa-link me-2"></i>
+                                Endpoints Principales de la API
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="api-endpoint">
+                                <strong>POST</strong> <code>/api/auth/login/</code>
+                                <span class="text-muted">- Iniciar sesión y obtener tokens JWT</span>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>POST</strong> <code>/api/auth/register/</code>
+                                <span class="text-muted">- Registrar nuevo usuario</span>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>GET</strong> <code>/api/auth/profile/</code>
+                                <span class="text-muted">- Obtener perfil del usuario autenticado</span>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>GET</strong> <code>/api/auth/users/</code>
+                                <span class="text-muted">- Listar usuarios (según permisos)</span>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>GET</strong> <code>/api/auth/stats/</code>
+                                <span class="text-muted">- Estadísticas del sistema (solo admins)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mx-auto text-center">
+                    <h3 class="text-white mb-4">Acciones Rápidas</h3>
+                    <div class="d-grid gap-2">
+                        <a href="/api/auth/" class="btn btn-info btn-lg">
+                            <i class="fas fa-eye me-2"></i>
+                            Ver Estado de la API
+                        </a>
+                        <a href="/admin/" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Acceder al Panel de Administración
+                        </a>
+                        <button class="btn btn-success btn-lg" onclick="testAPI()">
+                            <i class="fas fa-play me-2"></i>
+                            Probar API (Estado)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h5>Mindara Authentication System</h5>
+                    <p>Sistema completo de autenticación con Django REST Framework</p>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <p>
+                        <strong>Tech Stack:</strong> Django 5.2.5, PostgreSQL, JWT<br>
+                        <strong>Status:</strong> <span class="text-success">Operacional</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Función para probar la API
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/status/');
+                const data = await response.json();
+                
+                alert(`API Status: ${data.status}\nMessage: ${data.message}\nVersion: ${data.version}`);
+            } catch (error) {
+                alert('Error al conectar con la API: ' + error.message);
+            }
+        }
+        
+        // Mostrar información del sistema al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Mindara Authentication System');
+            console.log('📚 Documentación de API disponible en /api-auth/');
+            console.log('⚙️ Panel de administración en /admin/');
+            console.log('🔧 Endpoints de autenticación en /api/auth/');
+        });
+    </script>
+</body>
+</html>

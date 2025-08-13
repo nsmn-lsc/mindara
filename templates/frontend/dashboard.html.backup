@@ -1,0 +1,526 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Dashboard - {{ user.get_user_level_display }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header del Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                        Dashboard
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Bienvenido {{ user.get_full_name|default:user.username }} - 
+                        <span class="badge badge-{{ user.user_level|lower }}">{{ user.get_user_level_display }}</span>
+                    </p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Último acceso: {{ user.last_login|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Módulos Principales según el nivel de usuario -->
+    <div class="row mb-4">
+        <!-- Módulo de Eventos (Todos los usuarios) -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card module-card h-100" onclick="window.location.href='/eventos/'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div class="module-icon mb-3">
+                        <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Eventos</h4>
+                    <p class="card-text text-muted">
+                        Gestiona y programa tus eventos, reuniones y actividades
+                    </p>
+                    <div class="module-stats">
+                        <span class="badge bg-primary" id="total-eventos">0</span> eventos activos
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        <i class="fas fa-arrow-right me-1"></i>
+                        Ir a Eventos
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulo de Perfil (Usuarios y Managers) -->
+        {% if user.is_user or user.is_manager %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card module-card h-100" onclick="window.location.href='/eventos/perfil/'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div class="module-icon mb-3">
+                        <i class="fas fa-user-circle fa-3x text-success"></i>
+                    </div>
+                    <h4 class="card-title">Mi Perfil</h4>
+                    <p class="card-text text-muted">
+                        Gestiona tu información personal y configuración de cuenta
+                    </p>
+                    <div class="module-stats">
+                        <span class="badge bg-success">Activo</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        <i class="fas fa-arrow-right me-1"></i>
+                        Ver Perfil
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Módulo de Administración de Usuarios (Solo Administradores) -->
+        {% if user.is_admin %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card module-card h-100" onclick="toggleUsersSection()" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div class="module-icon mb-3">
+                        <i class="fas fa-users-cog fa-3x text-warning"></i>
+                    </div>
+                    <h4 class="card-title">Administración</h4>
+                    <p class="card-text text-muted">
+                        Gestiona usuarios, permisos y configuración del sistema
+                    </p>
+                    <div class="module-stats">
+                        <span class="badge bg-warning text-dark" id="total-usuarios">0</span> usuarios
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        <i class="fas fa-arrow-right me-1"></i>
+                        Administrar Sistema
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Panel de Administración (Solo visible para Administradores) -->
+    {% if user.is_admin %}
+    <div id="admin-panel" style="display: none;">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="fas fa-crown fa-2x me-3"></i>
+                    <div>
+                        <h5 class="mb-1">Panel de Administrador</h5>
+                        <p class="mb-0">Gestión completa del sistema y usuarios.</p>
+                    </div>
+                    <button class="btn btn-outline-info ms-auto" onclick="toggleUsersSection()">
+                        <i class="fas fa-times"></i> Cerrar Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+                    <h3 class="mb-1" id="totalUsers">{{ user_stats.total_users }}</h3>
+                    <p class="text-muted mb-0">Total Usuarios</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                    <h3 class="mb-1" id="activeUsers">{{ user_stats.active_users }}</h3>
+                    <p class="text-muted mb-0">Usuarios Activos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-crown fa-2x text-danger mb-2"></i>
+                    <h3 class="mb-1" id="adminUsers">{{ user_stats.admin_users }}</h3>
+                    <p class="text-muted mb-0">Administradores</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-tie fa-2x text-warning mb-2"></i>
+                    <h3 class="mb-1" id="managerUsers">{{ user_stats.manager_users }}</h3>
+                    <p class="text-muted mb-0">Gestores</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard del Manager -->
+    {% elif user.is_manager %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="fas fa-user-tie fa-2x me-3"></i>
+                <div>
+                    <h5 class="mb-1">Panel de Gestor</h5>
+                    <p class="mb-0">Puedes gestionar usuarios básicos y ver estadísticas limitadas del sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estadísticas para Managers -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="mb-1" id="totalUsers">{{ user_stats.total_users }}</h3>
+                    <p class="text-muted mb-0">Usuarios Gestionables</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                    <h3 class="mb-1" id="activeUsers">{{ user_stats.active_users }}</h3>
+                    <p class="text-muted mb-0">Usuarios Activos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-2x text-info mb-2"></i>
+                    <h3 class="mb-1" id="basicUsers">{{ user_stats.basic_users }}</h3>
+                    <p class="text-muted mb-0">Usuarios Básicos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard del Usuario Básico -->
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-primary d-flex align-items-center">
+                <i class="fas fa-user fa-2x me-3"></i>
+                <div>
+                    <h5 class="mb-1">Panel de Usuario</h5>
+                    <p class="mb-0">Bienvenido al sistema. Aquí puedes ver tu información personal y configuraciones básicas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Información personal para Usuario Básico -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Mi Perfil
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="user-avatar-large mx-auto mb-3">
+                                {{ user.first_name.0|default:user.username.0|upper }}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <p><strong>Nombre:</strong> {{ user.get_full_name|default:"No especificado" }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Usuario:</strong> {{ user.username }}</p>
+                            <p><strong>Nivel:</strong> <span class="badge badge-{{ user.user_level|lower }}">{{ user.get_user_level_display }}</span></p>
+                            <p><strong>Miembro desde:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Actividad
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Último acceso:</strong> {{ user.last_login|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Estado:</strong> 
+                        <span class="badge bg-success">
+                            <i class="fas fa-circle me-1"></i>
+                            Activo
+                        </span>
+                    </p>
+                    <hr>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Si necesitas cambiar tu información personal o tienes algún problema, contacta al administrador del sistema.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Acciones rápidas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user.is_admin %}
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/" target="_blank" class="btn btn-danger w-100">
+                                <i class="fas fa-cog me-2"></i>
+                                Panel Admin
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-primary w-100" onclick="showCreateUserModal()">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Crear Usuario
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-info w-100" onclick="loadUserList()">
+                                <i class="fas fa-users me-2"></i>
+                                Ver Usuarios
+                            </button>
+                        </div>
+                        {% elif user.is_manager %}
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-primary w-100" onclick="loadUserList()">
+                                <i class="fas fa-users me-2"></i>
+                                Gestionar Usuarios
+                            </button>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-info w-100" onclick="showCreateUserModal()">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Crear Usuario Básico
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-secondary w-100" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear usuarios (solo admins y managers) -->
+{% if user.can_manage_users %}
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Crear Nuevo Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createUserForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    {% if user.is_admin %}
+                    <div class="form-group">
+                        <label class="form-label">Nivel de Usuario</label>
+                        <select class="form-control" name="user_level" required>
+                            <option value="USER">Usuario Básico</option>
+                            <option value="MANAGER">Gestor</option>
+                            <option value="ADMIN">Administrador</option>
+                        </select>
+                    </div>
+                    {% else %}
+                    <input type="hidden" name="user_level" value="USER">
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.user-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.alert {
+    border: none;
+    border-radius: 10px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar estadísticas actualizadas
+    refreshDashboard();
+});
+
+function refreshDashboard() {
+    fetch('/api/dashboard-stats/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateDashboardStats(data.stats);
+            }
+        })
+        .catch(error => console.error('Error loading dashboard stats:', error));
+}
+
+function updateDashboardStats(stats) {
+    // Actualizar estadísticas en el DOM
+    const elements = {
+        'totalUsers': stats.total_users,
+        'activeUsers': stats.active_users,
+        'adminUsers': stats.admin_users,
+        'managerUsers': stats.manager_users,
+        'basicUsers': stats.basic_users
+    };
+    
+    Object.entries(elements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element && value !== undefined) {
+            element.textContent = value;
+        }
+    });
+}
+
+function showCreateUserModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createUserModal'));
+    modal.show();
+}
+
+function loadUserList() {
+    // Esta función se implementará cuando creemos la gestión de usuarios
+    showAlert('Función de gestión de usuarios en desarrollo', 'info');
+}
+
+// Event listener para el formulario de crear usuario
+{% if user.can_manage_users %}
+document.getElementById('createUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        email: formData.get('email'),
+        username: formData.get('username'),
+        password: formData.get('password'),
+        user_level: formData.get('user_level') || 'USER'
+    };
+    
+    fetch('/authentication/api/register/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.MINDARA.csrfToken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Usuario creado exitosamente', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
+            refreshDashboard();
+            this.reset();
+        } else {
+            showAlert(data.message || 'Error al crear usuario', 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error de conexión', 'danger');
+        console.error('Error:', error);
+    });
+});
+{% endif %}
+</script>
+{% endblock %}

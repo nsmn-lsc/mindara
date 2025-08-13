@@ -1,0 +1,302 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil - Mindara{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    /* Cards con altura consistente y mejor espaciado interno */
+    .profile-card.h-100 { height: 100%; }
+    .profile-card .card-header { padding: 1rem 1.25rem; }
+    .profile-card .card-body { padding: 1.5rem 2rem; }
+    .equal-card { display: flex; flex-direction: column; }
+    .equal-card .card-body { flex: 1 1 auto; }
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+    }
+    .notification-item {
+        border-left: 4px solid #007bff;
+        background: #f8f9fa;
+        margin-bottom: 0.5rem;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.3s ease;
+    }
+    .notification-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    .notification-item.general { border-left-color: #17a2b8; }
+    .notification-item.sistema { border-left-color: #6c757d; }
+    .notification-item.evento { border-left-color: #28a745; }
+    .notification-item.personal { border-left-color: #ffc107; }
+    .notification-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .user-level-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .user-level-admin {
+        background: #dc3545;
+        color: white;
+    }
+    .user-level-manager {
+        background: #fd7e14;
+        color: white;
+    }
+    .user-level-user {
+        background: #28a745;
+        color: white;
+    }
+    /* Mejor distribución: el panel de notificaciones no debe ser demasiado alto */
+    .notifications-body {
+        max-height: 420px;
+        overflow: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-user-circle me-2 text-success"></i>
+                        Mi Perfil
+                    </h2>
+                    <p class="text-muted mb-0">Gestiona tu información personal y notificaciones</p>
+                </div>
+                <div>
+                    <a href="{% url 'frontend:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="row align-items-stretch">
+                <!-- Información del Perfil -->
+                <div class="col-lg-4 col-xl-4 d-flex mb-4">
+                    <div class="profile-card equal-card h-100 w-100">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4>{{ user.get_full_name|default:user.username }}</h4>
+                            <span class="user-level-badge user-level-{{ user.user_level|lower }}">
+                                {{ user.get_user_level_display }}
+                            </span>
+                        </div>
+                        
+            <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">Email</small>
+                                <p class="mb-0">{{ user.email|default:"No especificado" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Usuario desde</small>
+                                <p class="mb-0">{{ user.date_joined|date:"d/m/Y" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Último acceso</small>
+                                <p class="mb-0">{{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+        <!-- Estadísticas de Eventos -->
+        <div class="col-lg-4 col-xl-4 d-flex mb-4">
+            <div class="profile-card equal-card h-100 w-100">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success me-2"></i>
+                        Mis Estadísticas de Eventos
+                    </h5>
+                    <a href="/eventos/" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded h-100">
+                                <div class="text-muted small">Total Registrados</div>
+                                <div class="fw-bold fs-4" id="stat-total">—</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded h-100">
+                                <div class="text-muted small">Completados</div>
+                                <div class="fw-bold fs-4 text-success" id="stat-completados">—</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded h-100">
+                                <div class="text-muted small">En Progreso / Hoy</div>
+                                <div class="fw-bold fs-5 text-primary" id="stat-hoy">—</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded h-100">
+                                <div class="text-muted small">Pendientes Futuros</div>
+                                <div class="fw-bold fs-5 text-warning" id="stat-futuros">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <h6 class="text-muted text-uppercase small mb-2">Prioridades</h6>
+                        <div class="d-flex flex-wrap gap-2" id="stat-prioridades">
+                            <!-- Chips de prioridad renderizados por JS -->
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="text-muted text-uppercase small mb-2">Último Evento</h6>
+                        <div id="stat-ultimo" class="small text-muted">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Notificaciones Recientes -->
+                <div class="col-lg-4 col-xl-4 d-flex mb-4">
+                    <div class="profile-card equal-card h-100 w-100">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bell text-warning me-2"></i>
+                                Notificaciones Recientes
+                            </h5>
+                            <div>
+                                <span class="badge bg-primary">{{ total_notificaciones }} total</span>
+                                <a href="{% url 'eventos:notificaciones' %}" class="btn btn-sm btn-outline-primary ms-2">
+                                    Ver todas
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body notifications-body">
+                            {% if notificaciones_recientes %}
+                                {% for notificacion in notificaciones_recientes %}
+                                    <div class="notification-item {{ notificacion.tipo|lower }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ notificacion.titulo }}</h6>
+                                                <p class="mb-1">{{ notificacion.mensaje|truncatewords:15 }}</p>
+                                                <small class="notification-date">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ notificacion.fecha_creacion|timesince }} atrás
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-{{ notificacion.tipo|lower }} ms-2">
+                                                {{ notificacion.get_tipo_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>No tienes notificaciones recientes</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+                {% block extra_js %}
+                <script>
+                // Cargar estadísticas de eventos del usuario utilizando el endpoint existente de eventos
+                document.addEventListener('DOMContentLoaded', function() {
+                    fetch('/eventos/api/eventos/')
+                        .then(r => r.ok ? r.json() : Promise.reject())
+                        .then(data => {
+                            const eventos = Array.isArray(data) ? data : (data.results || []);
+                            const ahora = new Date();
+                            let total = eventos.length;
+                            let completados = 0;
+                            let hoy = 0;
+                            let futuros = 0;
+                            const prioridades = {};
+                            let ultimo = null;
+
+                            eventos.forEach(ev => {
+                                // Parse fechas (asumiendo formato ISO o 'YYYY-MM-DDTHH:MM')
+                                const inicio = ev.fecha_inicio ? new Date(ev.fecha_inicio) : null;
+                                const fin = ev.fecha_fin ? new Date(ev.fecha_fin) : inicio;
+                                if (ev.ha_terminado || (fin && fin < ahora)) completados++;
+                                else if (inicio && inicio.toDateString() === ahora.toDateString()) hoy++;
+                                else if (inicio && inicio > ahora) futuros++;
+                                if (ev.prioridad) prioridades[ev.prioridad] = (prioridades[ev.prioridad] || 0) + 1;
+                                if (!ultimo || (inicio && new Date(inicio) > new Date(ultimo.fecha_inicio))) ultimo = ev;
+                            });
+
+                            document.getElementById('stat-total').textContent = total;
+                            document.getElementById('stat-completados').textContent = completados;
+                            document.getElementById('stat-hoy').textContent = hoy;
+                            document.getElementById('stat-futuros').textContent = futuros;
+
+                            const prioridadesWrap = document.getElementById('stat-prioridades');
+                            const prioridadOrden = ['URGENTE','ALTA','MEDIA','BAJA'];
+                            prioridadOrden.filter(p=>prioridades[p]).forEach(p => {
+                                const span = document.createElement('span');
+                                span.className = 'badge bg-secondary';
+                                span.textContent = p + ': ' + prioridades[p];
+                                if (p === 'URGENTE') span.className = 'badge bg-danger';
+                                else if (p === 'ALTA') span.className = 'badge bg-warning text-dark';
+                                else if (p === 'MEDIA') span.className = 'badge bg-info text-dark';
+                                else if (p === 'BAJA') span.className = 'badge bg-secondary';
+                                prioridadesWrap.appendChild(span);
+                            });
+
+                            const ultimoDiv = document.getElementById('stat-ultimo');
+                            if (ultimo) {
+                                const fechaTxt = ultimo.fecha_inicio ? new Date(ultimo.fecha_inicio).toLocaleString('es-MX') : '';
+                                ultimoDiv.innerHTML = '<strong>' + (ultimo.titulo || 'Sin título') + '</strong><br><span class="text-muted">' + fechaTxt + '</span>';
+                            } else {
+                                ultimoDiv.textContent = 'Sin eventos aún';
+                            }
+                        })
+                        .catch(()=>{
+                            ['stat-total','stat-completados','stat-hoy','stat-futuros','stat-ultimo'].forEach(id=>{
+                                const el = document.getElementById(id);
+                                if (el) el.textContent = '—';
+                            });
+                        });
+                });
+                </script>
+                {% endblock %}
+</div>
+{% endblock %}

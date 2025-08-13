@@ -1,0 +1,389 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #1B263B 0%, #415A77 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .user-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .user-level-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .user-level-admin {
+        background: #dc3545;
+        color: white;
+    }
+    .user-level-manager {
+        background: #fd7e14;
+        color: white;
+    }
+    .user-level-user {
+        background: #28a745;
+        color: white;
+    }
+    .search-filters {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header de Administración -->
+            <div class="admin-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-users-cog me-2"></i>
+                            Gestión de Usuarios
+                        </h2>
+                        <p class="mb-0 opacity-75">
+                            Administra usuarios, permisos y configuración del sistema
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{% url 'frontend:dashboard' %}" class="btn btn-outline-light me-2">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Volver al Dashboard
+                        </a>
+                        <a href="{% url 'frontend:create_user' %}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Crear Usuario
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-users fa-2x mb-2" style="color: #06A77D;"></i>
+                        <h3>{{ stats.total_users }}</h3>
+                        <p class="text-muted mb-0">Total Usuarios</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-user-check fa-2x mb-2" style="color: #0891b2;"></i>
+                        <h3>{{ stats.active_users }}</h3>
+                        <p class="text-muted mb-0">Usuarios Activos</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-user-tie fa-2x mb-2" style="color: #1B263B;"></i>
+                        <h3>{{ stats.manager_users }}</h3>
+                        <p class="text-muted mb-0">Managers</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-user fa-2x mb-2" style="color: #415A77;"></i>
+                        <h3>{{ stats.basic_users }}</h3>
+                        <p class="text-muted mb-0">Usuarios Básicos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de Búsqueda -->
+            <div class="search-filters">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="search" class="form-label">Buscar Usuario</label>
+                        {{ search_form.search }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="user_level" class="form-label">Nivel de Usuario</label>
+                        {{ search_form.user_level }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="is_active" class="form-label">Estado</label>
+                        {{ search_form.is_active }}
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>
+                            Buscar
+                        </button>
+                        <a href="{% url 'frontend:user_management' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla de Usuarios -->
+            <div class="user-table">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Nombre Completo</th>
+                                <th>Nivel</th>
+                                <th>Estado</th>
+                                <th>Último Acceso</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_item in users %}
+                            <tr id="user-row-{{ user_item.id }}">
+                                <td>
+                                    <strong>{{ user_item.username }}</strong>
+                                    {% if user_item == user %}
+                                        <span class="badge bg-info ms-1">Tú</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user_item.email }}</td>
+                                <td>{{ user_item.get_full_name|default:'-' }}</td>
+                                <td>
+                                    <span class="user-level-badge user-level-{{ user_item.user_level|lower }}">
+                                        {{ user_item.get_user_level_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user_item.is_active %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user_item.last_login|date:"d/m/Y H:i"|default:'-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'frontend:edit_user' user_item.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Editar usuario">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if user_item != user %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-warning toggle-status-btn" 
+                                                    data-user-id="{{ user_item.id }}"
+                                                    data-current-status="{{ user_item.is_active|yesno:'true,false' }}"
+                                                    title="{% if user_item.is_active %}Desactivar{% else %}Activar{% endif %} usuario">
+                                                <i class="fas fa-{% if user_item.is_active %}pause{% else %}play{% endif %}"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger delete-user-btn" 
+                                                    data-user-id="{{ user_item.id }}"
+                                                    data-username="{{ user_item.username }}"
+                                                    title="Eliminar usuario">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>No se encontraron usuarios con los filtros aplicados</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if users.has_other_pages %}
+                <div class="d-flex justify-content-center py-3">
+                    <nav aria-label="Paginación de usuarios">
+                        <ul class="pagination">
+                            {% if users.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ users.previous_page_number }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in users.paginator.page_range %}
+                                {% if num == users.number %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > users.number|add:'-3' and num < users.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if users.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ users.next_page_number }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="actionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            <strong class="me-auto">Gestión de Usuarios</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para mostrar toast
+function showToast(message, type = 'info') {
+    const toastElement = document.getElementById('actionToast');
+    const messageElement = document.getElementById('toastMessage');
+    const iconElement = toastElement.querySelector('.toast-header i');
+    
+    messageElement.textContent = message;
+    
+    // Cambiar el icono según el tipo
+    iconElement.className = `fas me-2 ${type === 'success' ? 'fa-check-circle text-success' : 
+                                       type === 'error' ? 'fa-exclamation-circle text-danger' : 
+                                       'fa-info-circle text-primary'}`;
+    
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+}
+
+// Activar/desactivar usuario
+document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const userId = this.dataset.userId;
+        const currentStatus = this.dataset.currentStatus === 'true';
+        const action = currentStatus ? 'desactivar' : 'activar';
+        
+        if (confirm(`¿Estás seguro que deseas ${action} este usuario?`)) {
+            fetch(`/api/users/${userId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Recargar la página para reflejar cambios
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error al procesar la solicitud', 'error');
+            });
+        }
+    });
+});
+
+// Eliminar usuario
+document.querySelectorAll('.delete-user-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const userId = this.dataset.userId;
+        const username = this.dataset.username;
+        
+        if (confirm(`¿Estás seguro que deseas eliminar el usuario "${username}"? Esta acción no se puede deshacer.`)) {
+            fetch(`/api/users/${userId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Eliminar la fila de la tabla
+                    const row = document.getElementById(`user-row-${userId}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.5s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                        }, 500);
+                    }
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error al eliminar el usuario', 'error');
+            });
+        }
+    });
+});
+
+// Animaciones al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar estadísticas
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

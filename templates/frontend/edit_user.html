@@ -1,0 +1,323 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+    .edit-user-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .edit-user-header {
+        background: linear-gradient(135deg, #0891b2 0%, #06A77D 100%);
+        color: white;
+        padding: 2rem;
+    }
+    .form-floating .form-control {
+        border-radius: 8px;
+    }
+    .form-floating .form-select {
+        border-radius: 8px;
+    }
+    .user-info-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="edit-user-card">
+                <!-- Header -->
+                <div class="edit-user-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">
+                                <i class="fas fa-user-edit me-2"></i>
+                                Editar Usuario: {{ edited_user.username }}
+                            </h3>
+                            <p class="mb-0 opacity-75">
+                                Modifica la información del usuario seleccionado
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'frontend:user_management' %}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Volver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información actual del usuario -->
+                <div class="card-body p-4">
+                    <div class="user-info-card mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Información Actual</h6>
+                                <p><strong>ID:</strong> {{ edited_user.id }}</p>
+                                <p><strong>Fecha de registro:</strong> {{ edited_user.date_joined|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Último acceso:</strong> {{ edited_user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Estado Actual</h6>
+                                <p>
+                                    <strong>Estado:</strong> 
+                                    {% if edited_user.is_active %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <strong>Nivel:</strong> 
+                                    <span class="badge {% if edited_user.user_level == 'ADMIN' %}bg-danger{% elif edited_user.user_level == 'MANAGER' %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ edited_user.get_user_level_display }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Error en el formulario
+                            </h6>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <!-- Información Personal -->
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>
+                                    Información Personal
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.first_name }}
+                                    <label for="{{ form.first_name.id_for_label }}">Nombre *</label>
+                                </div>
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.first_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.last_name }}
+                                    <label for="{{ form.last_name.id_for_label }}">Apellido *</label>
+                                </div>
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.last_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    {{ form.email }}
+                                    <label for="{{ form.email.id_for_label }}">Email *</label>
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Información de Cuenta -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-key me-2"></i>
+                                    Información de Cuenta
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.username }}
+                                    <label for="{{ form.username.id_for_label }}">Nombre de Usuario</label>
+                                </div>
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.username.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    El nombre de usuario no se puede cambiar.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.user_level }}
+                                    <label for="{{ form.user_level.id_for_label }}">Nivel de Usuario *</label>
+                                </div>
+                                {% if form.user_level.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.user_level.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Estado de la Cuenta -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-cog me-2"></i>
+                                    Configuración
+                                </h5>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Usuario activo
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    Los usuarios inactivos no pueden iniciar sesión en el sistema.
+                                </div>
+                                {% if form.is_active.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.is_active.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'frontend:user_management' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle text-info me-2"></i>
+                                Cambio de Contraseña
+                            </h6>
+                            <p class="card-text small">
+                                Para cambiar la contraseña del usuario, este debe hacerlo desde su perfil o puede ser restablecida por un administrador.
+                            </p>
+                            <p class="card-text small mb-0">
+                                Los cambios de nivel de usuario tendrán efecto en el próximo inicio de sesión.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-shield-alt text-warning me-2"></i>
+                                Permisos por Nivel
+                            </h6>
+                            <ul class="list-unstyled mb-0 small">
+                                <li class="mb-1">
+                                    <span class="badge bg-danger me-2">ADMIN</span>
+                                    Gestión completa del sistema
+                                </li>
+                                <li class="mb-1">
+                                    <span class="badge bg-warning me-2">MANAGER</span>
+                                    Gestión de usuarios básicos
+                                </li>
+                                <li>
+                                    <span class="badge bg-success me-2">USER</span>
+                                    Acceso a eventos y perfil
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Deshabilitar el botón de envío durante el procesamiento
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+    });
+    
+    // Confirmar cambios importantes
+    const userLevelSelect = document.getElementById('{{ form.user_level.id_for_label }}');
+    const isActiveCheckbox = document.getElementById('{{ form.is_active.id_for_label }}');
+    
+    if (userLevelSelect) {
+        userLevelSelect.addEventListener('change', function() {
+            if (this.value === 'ADMIN') {
+                if (!confirm('¿Estás seguro de asignar permisos de administrador a este usuario? Tendrá acceso completo al sistema.')) {
+                    // Revertir al valor anterior
+                    this.value = '{{ edited_user.user_level }}';
+                }
+            }
+        });
+    }
+    
+    if (isActiveCheckbox) {
+        isActiveCheckbox.addEventListener('change', function() {
+            if (!this.checked) {
+                if (!confirm('¿Estás seguro de desactivar este usuario? No podrá iniciar sesión hasta que sea reactivado.')) {
+                    this.checked = true;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

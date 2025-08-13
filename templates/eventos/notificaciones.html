@@ -1,0 +1,161 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Mis Notificaciones - Mindara{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+    .notification-item {
+        border-left: 4px solid #007bff;
+        background: white;
+        margin-bottom: 1rem;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .notification-item.general { border-left-color: #17a2b8; }
+    .notification-item.sistema { border-left-color: #6c757d; }
+    .notification-item.evento { border-left-color: #28a745; }
+    .notification-item.personal { border-left-color: #ffc107; }
+    .priority-high {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-bell text-warning me-2"></i>
+                        Mis Notificaciones
+                    </h2>
+                    <p class="text-muted mb-0">Todas tus notificaciones del sistema</p>
+                </div>
+                <div>
+                    <a href="{% url 'eventos:perfil' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver al Perfil
+                    </a>
+                </div>
+            </div>
+            
+            {% if notificaciones %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3 text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mostrando {{ notificaciones|length }} de {{ total_notificaciones }} notificaciones
+                        </div>
+                        
+                        {% for notificacion in notificaciones %}
+                            <div class="notification-item {{ notificacion.tipo|lower }}">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h5 class="mb-0 me-2">{{ notificacion.titulo }}</h5>
+                                                <span class="badge bg-{{ notificacion.tipo|lower }}">
+                                                    {{ notificacion.get_tipo_display }}
+                                                </span>
+                                                {% if notificacion.prioridad == 'alta' %}
+                                                    <span class="badge priority-high ms-2">
+                                                        <i class="fas fa-exclamation-triangle"></i> Alta Prioridad
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <p class="mb-2">{{ notificacion.mensaje }}</p>
+                                            
+                                            <div class="text-muted small">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                                                
+                                                {% if notificacion.fecha_expiracion %}
+                                                    <span class="ms-3">
+                                                        <i class="fas fa-hourglass-end me-1"></i>
+                                                        Expira: {{ notificacion.fecha_expiracion|date:"d/m/Y" }}
+                                                    </span>
+                                                {% endif %}
+                                                
+                                                {% if notificacion.creado_por %}
+                                                    <span class="ms-3">
+                                                        <i class="fas fa-user me-1"></i>
+                                                        {{ notificacion.creado_por.get_full_name|default:notificacion.creado_por.username }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Paginación -->
+                        {% if notificaciones.has_other_pages %}
+                            <nav aria-label="Paginación de notificaciones" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if notificaciones.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">
+                                                <i class="fas fa-angle-double-left"></i> Primera
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ notificaciones.previous_page_number }}">
+                                                <i class="fas fa-angle-left"></i> Anterior
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Página {{ notificaciones.number }} de {{ notificaciones.paginator.num_pages }}
+                                        </span>
+                                    </li>
+                                    
+                                    {% if notificaciones.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ notificaciones.next_page_number }}">
+                                                Siguiente <i class="fas fa-angle-right"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ notificaciones.paginator.num_pages }}">
+                                                Última <i class="fas fa-angle-double-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No tienes notificaciones</h4>
+                            <p class="text-muted">Cuando recibas notificaciones aparecerán aquí.</p>
+                            <a href="{% url 'eventos:perfil' %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Perfil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Estadísticas de Eventos por Usuario - Mindara{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+.table-sticky thead th { position: sticky; top:0; background:#f8f9fa; z-index:2; }
+.stat-badge { font-size:0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-chart-bar me-2 text-success"></i>
+            Estadísticas de Eventos por Usuario
+        </h2>
+        <div>
+            <a href="{% url 'frontend:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body d-flex flex-wrap gap-3">
+            <div>
+                <div class="text-muted small">Usuarios con eventos</div>
+                <div class="fw-bold fs-4">{{ total_usuarios_con_eventos }}</div>
+            </div>
+            <div>
+                <div class="text-muted small">Eventos totales</div>
+                <div class="fw-bold fs-4">{{ total_eventos_sum }}</div>
+            </div>
+            <div class="flex-grow-1"></div>
+            <form method="get" class="row g-2 align-items-end w-100">
+                <div class="col-md-3">
+                    <label class="form-label small">Buscar por nombre</label>
+                    <input type="text" name="q" value="{{ filtros_aplicados.q }}" class="form-control form-control-sm" placeholder="Nombre del evento">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Prioridad</label>
+                    <select name="prioridad" class="form-select form-select-sm">
+                        <option value="">(Todas)</option>
+                        {% for p in prioridades_opciones %}
+                            <option value="{{ p }}" {% if filtros_aplicados.prioridad == p %}selected{% endif %}>{{ p|capfirst }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Desde</label>
+                    <input type="date" name="desde" value="{{ filtros_aplicados.desde }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Hasta</label>
+                    <input type="date" name="hasta" value="{{ filtros_aplicados.hasta }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Usuario</label>
+                    <select name="usuario" class="form-select form-select-sm">
+                        <option value="">(Todos)</option>
+                        {% for u in usuarios_opciones %}
+                            <option value="{{ u.id }}" {% if filtros_aplicados.usuario|default:'' == u.id|stringformat:'s' %}selected{% endif %}>{{ u.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Registros por página</label>
+                    <select name="page_size" class="form-select form-select-sm">
+                        {% for size in page_sizes %}
+                            <option value="{{ size }}" {% if page_size == size %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter me-1"></i>Filtrar</button>
+                    <a href="?" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+                    <a href="?{% if querystring %}{{ querystring }}&{% endif %}export=csv" class="btn btn-sm btn-outline-success" title="Exportar CSV">
+                        <i class="fas fa-file-csv"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if filtros_aplicados.q or filtros_aplicados.prioridad or filtros_aplicados.desde or filtros_aplicados.hasta or filtros_aplicados.usuario %}
+    <div class="mb-3">
+        <span class="small text-muted me-2">Filtros activos:</span>
+        {% if filtros_aplicados.q %}<span class="badge bg-secondary me-1">Nombre: {{ filtros_aplicados.q }}</span>{% endif %}
+        {% if filtros_aplicados.prioridad %}<span class="badge bg-info text-dark me-1">Prioridad: {{ filtros_aplicados.prioridad|capfirst }}</span>{% endif %}
+        {% if filtros_aplicados.desde %}<span class="badge bg-success me-1">Desde: {{ filtros_aplicados.desde }}</span>{% endif %}
+        {% if filtros_aplicados.hasta %}<span class="badge bg-warning text-dark me-1">Hasta: {{ filtros_aplicados.hasta }}</span>{% endif %}
+        {% if filtros_aplicados.usuario %}
+            {% for u in usuarios_opciones %}
+                {% if u.id|stringformat:'s' == filtros_aplicados.usuario %}
+                    <span class="badge bg-primary me-1">Usuario: {{ u.nombre }}</span>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Detalle por Usuario</h5>
+        </div>
+        <div class="table-responsive" style="max-height:70vh;">
+            <table class="table table-hover table-sm table-sticky align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Activos</th>
+                        <th class="text-center">Completados</th>
+                        <th class="text-center">Urgentes</th>
+                        <th>Último Evento</th>
+                        <th>Título Último</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in filas %}
+                    <tr>
+                        <td>{{ fila.usuario }}</td>
+                        <td class="small text-muted">{{ fila.email }}</td>
+                        <td class="text-center"><span class="badge bg-secondary stat-badge">{{ fila.total }}</span></td>
+                        <td class="text-center"><span class="badge bg-primary stat-badge">{{ fila.activos }}</span></td>
+                        <td class="text-center"><span class="badge bg-success stat-badge">{{ fila.completados }}</span></td>
+                        <td class="text-center"><span class="badge bg-danger stat-badge">{{ fila.urgentes }}</span></td>
+                        <td class="small text-muted">{{ fila.ultimo }}</td>
+                        <td class="small">{{ fila.ultimo_nombre }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No hay eventos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="card-footer py-2">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page=1">«</a></li>
+                        <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">‹</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">«</span></li>
+                        <li class="page-item disabled"><span class="page-link">‹</span></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">›</a></li>
+                        <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.paginator.num_pages }}">»</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">›</span></li>
+                        <li class="page-item disabled"><span class="page-link">»</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    <!-- Gráfica al final siempre visible -->
+    <div class="card mt-4">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i><span id="chartTitle">Eventos</span></h5>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Rango gráfica">
+                {% with base=querystring %}
+                <a class="btn btn-outline-secondary {% if chart_mode == 'mes' %}active{% endif %}" href="?{% if base %}{{ base }}&{% endif %}chart=mes" title="Mes actual">Mes</a>
+                <a class="btn btn-outline-secondary {% if chart_mode == '3m' %}active{% endif %}" href="?{% if base %}{{ base }}&{% endif %}chart=3m" title="Últimos 3 meses">3M</a>
+                <a class="btn btn-outline-secondary {% if chart_mode == '12m' %}active{% endif %}" href="?{% if base %}{{ base }}&{% endif %}chart=12m" title="Últimos 12 meses">12M</a>
+                {% endwith %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="small text-muted mb-2" id="chartSubtitle"></div>
+            <canvas id="statsChart" style="max-height:340px;"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gráfica dinámica con toggles (mes, 3m, 12m)
+(function(){
+    const rawChartJson = '{{ chart_json|default:"{}"|escapejs }}';
+    let chartPayload = {};
+    try {
+        chartPayload = rawChartJson && rawChartJson.trim() ? JSON.parse(rawChartJson) : {};
+    } catch(e){
+        console.warn('chart_json inválido, usando {}', e, rawChartJson);
+        chartPayload = {};
+    }
+    const dataLabels = chartPayload.labels || [];
+    const dataCounts = chartPayload.counts || [];
+    function ensureChartJs(cb){
+        if(window.Chart){ cb(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        s.onload = cb; document.head.appendChild(s);
+    }
+    ensureChartJs(()=>{
+        const ctx = document.getElementById('statsChart');
+        if(!ctx) return;
+        const titleEl = document.getElementById('chartTitle');
+        const subEl = document.getElementById('chartSubtitle');
+        if(titleEl && chartPayload.title){ titleEl.innerText = chartPayload.title; }
+        if(subEl && chartPayload.mode){
+            const modeMap = { 'mes':'Distribución por usuario', '3m':'Total eventos últimos 3 meses', '12m':'Total eventos últimos 12 meses'};
+            subEl.textContent = modeMap[chartPayload.mode] || '';
+        }
+        if(dataLabels.length === 0){
+            ctx.parentElement.innerHTML = '<div class="text-muted small">Sin datos para el rango seleccionado.</div>';
+            return;
+        }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dataLabels,
+                datasets: [{
+                    label: chartPayload.mode === 'mes' ? 'Eventos (mes actual)' : 'Eventos',
+                    data: dataCounts,
+                    backgroundColor: 'rgba(6,167,125,0.6)',
+                    borderColor: 'rgba(6,167,125,1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    maxBarThickness: 38,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display:false } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision:0 },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                }
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

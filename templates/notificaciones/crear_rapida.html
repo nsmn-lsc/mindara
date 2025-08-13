@@ -1,0 +1,326 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Envío Rápido - Mindara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quick-form {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .quick-form .form-control,
+    .quick-form .form-select {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .quick-form .form-control:focus,
+    .quick-form .form-select:focus {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.5);
+        color: white;
+        box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
+    }
+    
+    .quick-form .form-control::placeholder {
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .quick-form .form-label {
+        color: rgba(255,255,255,0.9);
+        font-weight: 500;
+    }
+    
+    .quick-form .form-select option {
+        background: #343a40;
+        color: white;
+    }
+    
+    .send-button {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid white;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .send-button:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .character-counter {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.875rem;
+    }
+    
+    .recipients-preview {
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-paper-plane me-2"></i>
+Envío Rápido de Notificación
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="quick-form">
+                <div class="text-center mb-4">
+                    <i class="fas fa-rocket fa-3x mb-3" style="opacity: 0.8;"></i>
+                    <h4 class="mb-2">Envío Rápido</h4>
+                    <p class="mb-0" style="opacity: 0.8;">Envía una notificación inmediata a tus usuarios</p>
+                </div>
+                
+                <form method="post" id="quickNotificationForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag me-2"></i>
+                            {{ form.titulo.label }}
+                            <span class="text-warning">*</span>
+                        </label>
+                        {{ form.titulo }}
+                        {% if form.titulo.errors %}
+                            <div class="text-warning small mt-1">{{ form.titulo.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.mensaje.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment me-2"></i>
+                            {{ form.mensaje.label }}
+                            <span class="text-warning">*</span>
+                        </label>
+                        {{ form.mensaje }}
+                        <div class="character-counter mt-1">
+                            <span id="messageCount">0</span> / 500 caracteres
+                        </div>
+                        {% if form.mensaje.errors %}
+                            <div class="text-warning small mt-1">{{ form.mensaje.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.prioridad.id_for_label }}" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ form.prioridad.label }}
+                            </label>
+                            {{ form.prioridad }}
+                            {% if form.prioridad.errors %}
+                                <div class="text-warning small mt-1">{{ form.prioridad.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.nivel_usuario_objetivo.id_for_label }}" class="form-label">
+                                <i class="fas fa-users me-2"></i>
+                                {{ form.nivel_usuario_objetivo.label }}
+                            </label>
+                            {{ form.nivel_usuario_objetivo }}
+                            {% if form.nivel_usuario_objetivo.errors %}
+                                <div class="text-warning small mt-1">{{ form.nivel_usuario_objetivo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Vista previa de destinatarios -->
+                    <div class="recipients-preview" id="recipientsPreview">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users me-2"></i>
+                            <strong>Destinatarios: </strong>
+                            <span id="recipientsText" class="ms-2">Todos los usuarios</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{% url 'notificaciones:lista' %}" class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Volver
+                        </a>
+                        
+                        <div>
+                            <button type="button" class="btn btn-outline-light me-3" onclick="previewNotification()">
+                                <i class="fas fa-eye me-2"></i>
+                                Vista Previa
+                            </button>
+                            <button type="submit" class="btn send-button">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Ahora
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Consejos para el envío rápido -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Consejos para el Envío Rápido
+                    </h6>
+                    <ul class="mb-0">
+                        <li><strong>Título conciso:</strong> Máximo 100 caracteres para mayor impacto</li>
+                        <li><strong>Mensaje claro:</strong> Ve directo al punto, los usuarios leen rápido</li>
+                        <li><strong>Prioridad:</strong> Usa "Alta" solo para asuntos urgentes</li>
+                        <li><strong>Destinatarios:</strong> Segmenta por nivel de usuario cuando sea necesario</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de vista previa -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">
+                    <i class="fas fa-eye me-2"></i>
+                    Vista Previa de la Notificación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="notification-preview p-3" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                    <div class="d-flex align-items-start">
+                        <div class="notification-icon me-3">
+                            <i class="fas fa-bell fa-2x text-primary" id="modalIcon"></i>
+                        </div>
+                        <div class="notification-content flex-grow-1">
+                            <h6 class="mb-2" id="modalTitle">Título</h6>
+                            <p class="mb-2" id="modalMessage">Mensaje</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ "now"|date:"d/m/Y H:i" }}
+                                </small>
+                                <span class="badge" id="modalPriority">Media</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <strong>Se enviará a:</strong> <span id="modalRecipients">Todos los usuarios</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="submitForm()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    Enviar Notificación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageTextarea = document.getElementById('{{ form.mensaje.id_for_label }}');
+    const messageCounter = document.getElementById('messageCount');
+    const recipientsSelect = document.getElementById('{{ form.nivel_usuario_objetivo.id_for_label }}');
+    const recipientsText = document.getElementById('recipientsText');
+    
+    // Contador de caracteres
+    messageTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        messageCounter.textContent = count;
+        
+        if (count > 400) {
+            messageCounter.style.color = '#ffc107';
+        } else if (count > 450) {
+            messageCounter.style.color = '#dc3545';
+        } else {
+            messageCounter.style.color = 'rgba(255,255,255,0.7)';
+        }
+    });
+    
+    // Actualizar vista de destinatarios
+    recipientsSelect.addEventListener('change', function() {
+        const value = this.value;
+        const options = {
+            '': 'Todos los usuarios',
+            'ADMIN': 'Solo Administradores',
+            'MANAGER': 'Solo Managers',
+            'USER': 'Solo Usuarios'
+        };
+        recipientsText.textContent = options[value] || 'Todos los usuarios';
+    });
+    
+    // Contar caracteres iniciales
+    messageCounter.textContent = messageTextarea.value.length;
+});
+
+function previewNotification() {
+    const titulo = document.getElementById('{{ form.titulo.id_for_label }}').value || 'Sin título';
+    const mensaje = document.getElementById('{{ form.mensaje.id_for_label }}').value || 'Sin mensaje';
+    const prioridad = document.getElementById('{{ form.prioridad.id_for_label }}').value || 'media';
+    const nivelUsuario = document.getElementById('{{ form.nivel_usuario_objetivo.id_for_label }}').value;
+    
+    // Actualizar modal
+    document.getElementById('modalTitle').textContent = titulo;
+    document.getElementById('modalMessage').textContent = mensaje;
+    
+    // Actualizar prioridad y colores
+    const priorityBadge = document.getElementById('modalPriority');
+    const modalIcon = document.getElementById('modalIcon');
+    
+    if (prioridad === 'alta') {
+        priorityBadge.className = 'badge bg-danger';
+        priorityBadge.textContent = 'Alta';
+        modalIcon.className = 'fas fa-exclamation-circle fa-2x text-danger';
+    } else if (prioridad === 'media') {
+        priorityBadge.className = 'badge bg-warning';
+        priorityBadge.textContent = 'Media';
+        modalIcon.className = 'fas fa-info-circle fa-2x text-warning';
+    } else {
+        priorityBadge.className = 'badge bg-primary';
+        priorityBadge.textContent = 'Baja';
+        modalIcon.className = 'fas fa-bell fa-2x text-primary';
+    }
+    
+    // Actualizar destinatarios
+    const recipientsOptions = {
+        '': 'Todos los usuarios',
+        'ADMIN': 'Solo Administradores',
+        'MANAGER': 'Solo Managers',
+        'USER': 'Solo Usuarios'
+    };
+    document.getElementById('modalRecipients').textContent = recipientsOptions[nivelUsuario] || 'Todos los usuarios';
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+function submitForm() {
+    document.getElementById('quickNotificationForm').submit();
+}
+</script>
+{% endblock %}

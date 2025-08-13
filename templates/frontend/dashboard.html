@@ -1,0 +1,601 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Mindara{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header del Dashboard -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="dashboard-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 text-white">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Dashboard
+                                </h2>
+                                <p class="mb-0 opacity-75">
+                                    Bienvenido, {{ user.get_full_name|default:user.username }}
+                                    <span class="badge bg-light text-dark ms-2">{{ user.get_user_level_display }}</span>
+                                </p>
+                            </div>
+                            <div>
+                                <small class="text-white opacity-75">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Último acceso: {{ user.last_login|date:"d/m/Y H:i" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulos del Sistema -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3 class="mb-3" style="color: #06A77D; font-weight: 600;">
+                        <i class="fas fa-th-large me-3" style="font-size: 1.5rem; color: #0891b2;"></i>
+                        Módulos del Sistema
+                    </h3>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Módulo de Notificaciones (Destacado si hay no leídas) -->
+                <div class="col-12 mb-4" id="notificaciones-widget">
+                    <div class="alert alert-info d-none" id="notificaciones-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-bell fa-2x"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-1">
+                                    <span id="notificaciones-count">0</span> notificación(es) nueva(s)
+                                </h5>
+                                <p class="mb-2">Tienes notificaciones pendientes por revisar.</p>
+                                <a href="{% url 'notificaciones:mis_notificaciones' %}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Ver notificaciones
+                                </a>
+                            </div>
+                            <div>
+                                <button type="button" class="btn-close btn-close-white" onclick="ocultarBannerNotificaciones()" aria-label="Cerrar"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Módulo de Eventos (Todos los usuarios) -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('eventos')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-calendar-alt fa-3x" style="color: #06A77D;"></i>
+                            </div>
+                            <h4 class="card-title">Eventos</h4>
+                            <p class="card-text text-muted">
+                                Gestiona y programa eventos, citas y actividades importantes
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #06A77D, #0891b2); color: white;" id="total-eventos">0</span> eventos activos
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Ir a Eventos
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulo de Perfil (Usuarios y Managers) -->
+                {% if user.user_level == 'USER' or user.user_level == 'MANAGER' %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('perfil')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-user-circle fa-3x" style="color: #0891b2;"></i>
+                            </div>
+                            <h4 class="card-title">Mi Perfil</h4>
+                            <p class="card-text text-muted">
+                                Gestiona tu información personal y configuración de cuenta
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #0891b2, #06A77D); color: white;">Activo</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Ver Perfil
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Módulo de Administración de Usuarios (Solo Administradores) -->
+                {% if user.user_level == 'ADMIN' %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('user_management')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-users-cog fa-3x" style="color: #1B263B;"></i>
+                            </div>
+                            <h4 class="card-title">Gestión de Usuarios</h4>
+                            <p class="card-text text-muted">
+                                Crea, edita y administra usuarios del sistema
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #1B263B, #415A77); color: white;" id="total-usuarios">0</span> usuarios
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Gestionar Usuarios
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Módulo de Notificaciones (Admins y Managers) -->
+                {% if user.user_level == 'ADMIN' or user.user_level == 'MANAGER' %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('notificaciones')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-bell fa-3x" style="color: #415A77;"></i>
+                            </div>
+                            <h4 class="card-title">Notificaciones</h4>
+                            <p class="card-text text-muted">
+                                Envía avisos e información importante a los usuarios
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #415A77, #1B263B); color: white;" id="total-notificaciones">0</span> activas
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Gestionar Notificaciones
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Módulo Estadísticas de Eventos por Usuario (Admins y Managers) -->
+                {% if user.user_level == 'ADMIN' or user.user_level == 'MANAGER' %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('eventos_usuarios_stats')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-chart-bar fa-3x" style="color: #06A77D;"></i>
+                            </div>
+                            <h4 class="card-title">Estadísticas Eventos</h4>
+                            <p class="card-text text-muted">
+                                Vista consolidada de eventos por usuario (total, activos, completados, urgentes)
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #06A77D, #415A77); color: white;">
+                                    <i class="fas fa-chart-pie me-1"></i>
+                                    Ver Detalle
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Ir a Estadísticas
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Módulo de Reportes (Todos los usuarios) -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card module-card h-100" onclick="navigateToModule('reportes')" style="cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div class="module-icon mb-3">
+                                <i class="fas fa-file-alt fa-3x" style="color: #e74c3c;"></i>
+                            </div>
+                            <h4 class="card-title">Reportes</h4>
+                            <p class="card-text text-muted">
+                                Genera reportes de eventos en Excel y PDF con diferentes filtros
+                            </p>
+                            <div class="module-stats">
+                                <span class="badge" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white;">
+                                    <i class="fas fa-download me-1"></i>
+                                    Exportar
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-arrow-right me-1"></i>
+                                Generar Reportes
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel de Administración (solo para ADMIN) -->
+            {# Panel visible para ADMIN y MANAGER: incluye tabla de eventos por usuario #}
+            {% if user.user_level == 'ADMIN' or user.user_level == 'MANAGER' %}
+            <div class="row mt-5" id="admin-panel">
+                <div class="col-12">
+                    <div class="card admin-panel-card">
+                        <div class="card-header">
+                            <h4 class="mb-0 text-white">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Panel de Administración
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Estadísticas rápidas -->
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-users fa-2x mb-2" style="color: #06A77D;"></i>
+                                            <h3>{{ total_users|default:0 }}</h3>
+                                            <p>Usuarios Totales</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-calendar-alt fa-2x mb-2" style="color: #0891b2;"></i>
+                                            <h3>{{ total_eventos|default:0 }}</h3>
+                                            <p>Eventos Activos</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user-tie fa-2x mb-2" style="color: #1B263B;"></i>
+                                            <h3>{{ total_managers|default:0 }}</h3>
+                                            <p>Managers</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user fa-2x mb-2" style="color: #415A77;"></i>
+                                            <h3>{{ total_regular_users|default:0 }}</h3>
+                                            <p>Usuarios Regulares</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Estadísticas de Eventos por Usuario -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="mb-3 d-flex align-items-center">
+                                        <i class="fas fa-chart-pie me-2"></i>
+                                        Eventos por Usuario
+                                        <span class="badge bg-light text-dark ms-2" id="usuarios-con-eventos-count">0</span>
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle" id="tabla-eventos-por-usuario">
+                                            <thead>
+                                                <tr>
+                                                    <th>Usuario</th>
+                                                    <th class="text-center">Total</th>
+                                                    <th class="text-center">Activos</th>
+                                                    <th class="text-center">Completados</th>
+                                                    <th class="text-center">Urgentes</th>
+                                                    <th class="text-center">Último Evento</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">Cargando...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Usuarios recientes -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-clock me-2"></i>
+                                        Usuarios Recientes
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Email</th>
+                                                    <th>Nombre</th>
+                                                    <th>Nivel</th>
+                                                    <th>Último Acceso</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for recent_user in recent_users %}
+                                                <tr>
+                                                    <td>{{ recent_user.email }}</td>
+                                                    <td>{{ recent_user.nombre|default:'-' }}</td>
+                                                    <td>
+                                                        {% if recent_user.user_level == 'ADMIN' %}
+                                                            <span class="badge" style="background: linear-gradient(135deg, #1B263B, #415A77); color: white;">Administrador</span>
+                                                        {% elif recent_user.user_level == 'MANAGER' %}
+                                                            <span class="badge" style="background: linear-gradient(135deg, #0891b2, #06A77D); color: white;">Manager</span>
+                                                        {% else %}
+                                                            <span class="badge" style="background: linear-gradient(135deg, #06A77D, #0891b2); color: white;">Usuario</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ recent_user.last_login|default:'-'|date:"d/m/Y H:i" }}</td>
+                                                    <td>
+                                                        {% if recent_user.is_active %}
+                                                            <span class="badge" style="background: linear-gradient(135deg, #06A77D, #0891b2); color: white;">Activo</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">Inactivo</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted">
+                                                        No hay usuarios registrados
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <a href="{% url 'frontend:user_management' %}" class="btn btn-mindara btn-dashboard">
+                                            <i class="fas fa-users-cog me-2"></i>
+                                            Gestionar Usuarios
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function navigateToModule(module) {
+    // Mostrar indicador de carga
+    const moduleCards = document.querySelectorAll('.module-card');
+    moduleCards.forEach(card => {
+        card.style.opacity = '0.7';
+        card.style.pointerEvents = 'none';
+    });
+    
+    // Simular navegación
+    setTimeout(() => {
+        switch(module) {
+            case 'eventos':
+                window.location.href = '/eventos/';
+                break;
+            case 'perfil':
+                window.location.href = '/eventos/perfil/';
+                break;
+            case 'eventos_usuarios_stats':
+                window.location.href = '/dashboard/eventos-usuarios/';
+                break;
+            case 'user_management':
+                window.location.href = '/admin/users/';
+                break;
+            case 'notificaciones':
+                window.location.href = '/notificaciones/';
+                break;
+            case 'reportes':
+                window.location.href = '/reportes/';
+                break;
+            default:
+                console.log('Módulo no reconocido:', module);
+        }
+        
+        // Restaurar estado visual en caso de error
+        moduleCards.forEach(card => {
+            card.style.opacity = '1';
+            card.style.pointerEvents = 'auto';
+        });
+    }, 500);
+}
+
+// Función obsoleta - mantenida por compatibilidad
+function loadAdminModule() {
+    window.location.href = '/admin/users/';
+}
+
+// Animaciones al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar las tarjetas de módulos
+    const moduleCards = document.querySelectorAll('.module-card');
+    moduleCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Animar estadísticas si están presentes
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'scale(1)';
+        }, (index * 100) + 600);
+    });
+
+    // Cargar estadísticas
+    loadDashboardStats();
+    loadEventosPorUsuario();
+    
+    // Cargar notificaciones no leídas para el dashboard
+    cargarNotificacionesDashboard();
+});
+
+// Cargar notificaciones para mostrar en el dashboard
+function cargarNotificacionesDashboard() {
+    if (window.MINDARA && window.MINDARA.urls.obtenerNoLeidas) {
+        fetch(window.MINDARA.urls.obtenerNoLeidas)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.cantidad > 0) {
+                    mostrarBannerNotificaciones(data.cantidad);
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar notificaciones del dashboard:', error);
+            });
+    }
+}
+
+// Mostrar banner de notificaciones en dashboard
+function mostrarBannerNotificaciones(cantidad) {
+    const banner = document.getElementById('notificaciones-banner');
+    const countElement = document.getElementById('notificaciones-count');
+    
+    if (banner && countElement) {
+        countElement.textContent = cantidad;
+        banner.classList.remove('d-none');
+        
+        // Efecto de aparición suave
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            banner.style.transition = 'all 0.5s ease-out';
+            banner.style.opacity = '1';
+            banner.style.transform = 'translateY(0)';
+        }, 100);
+    }
+}
+
+// Ocultar banner de notificaciones
+function ocultarBannerNotificaciones() {
+    const banner = document.getElementById('notificaciones-banner');
+    if (banner) {
+        banner.style.transition = 'all 0.3s ease-out';
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            banner.classList.add('d-none');
+        }, 300);
+    }
+}
+
+// Cargar estadísticas del dashboard
+function loadDashboardStats() {
+    // Aquí se cargarían las estadísticas reales desde la API
+    // Por ahora, simularemos algunos datos
+    setTimeout(() => {
+        const eventosElement = document.getElementById('total-eventos');
+        const usuariosElement = document.getElementById('total-usuarios');
+        
+        if (eventosElement) {
+            eventosElement.textContent = '5';
+        }
+        
+        if (usuariosElement) {
+            usuariosElement.textContent = '12';
+        }
+    }, 1000);
+}
+
+// Cargar eventos agregados por usuario (solo admin/manager)
+function loadEventosPorUsuario() {
+    const tablaBody = document.querySelector('#tabla-eventos-por-usuario tbody');
+    if (!tablaBody) return;
+    fetch('/eventos/api/eventos/')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            const eventos = (data && data.success && Array.isArray(data.eventos)) ? data.eventos : [];
+            const agregados = {};
+            const ahora = new Date();
+            eventos.forEach(ev => {
+                if (!ev.usuario || !ev.usuario.id) return;
+                const uid = ev.usuario.id;
+                const uname = ev.usuario.nombre || ev.usuario.email || ('Usuario #' + uid);
+                if (!agregados[uid]) {
+                    agregados[uid] = {usuario: uname, total:0, activos:0, completados:0, urgentes:0, ultimo:null};
+                }
+                const entry = agregados[uid];
+                entry.total++;
+                const fin = ev.fecha_fin ? new Date(ev.fecha_fin) : null;
+                if (ev.ha_terminado || (fin && fin < ahora)) entry.completados++; else entry.activos++;
+                if ((ev.prioridad || '').toUpperCase() === 'URGENTE') entry.urgentes++;
+                const inicio = ev.fecha_inicio ? new Date(ev.fecha_inicio) : null;
+                if (!entry.ultimo || (inicio && inicio > new Date(entry.ultimo.fecha_inicio))) entry.ultimo = ev;
+            });
+            const rows = Object.values(agregados).sort((a,b)=> b.total - a.total);
+            tablaBody.innerHTML = '';
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                const ultimoTxt = row.ultimo ? new Date(row.ultimo.fecha_inicio).toLocaleString('es-MX') : '—';
+                tr.innerHTML = `
+                    <td>${row.usuario}</td>
+                    <td class="text-center"><span class="badge bg-secondary">${row.total}</span></td>
+                    <td class="text-center"><span class="badge bg-primary">${row.activos}</span></td>
+                    <td class="text-center"><span class="badge bg-success">${row.completados}</span></td>
+                    <td class="text-center"><span class="badge bg-danger">${row.urgentes}</span></td>
+                    <td class="text-center small text-muted">${ultimoTxt}</td>`;
+                tablaBody.appendChild(tr);
+            });
+            const countEl = document.getElementById('usuarios-con-eventos-count');
+            if (countEl) countEl.textContent = rows.length;
+            if (!rows.length) {
+                tablaBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Sin eventos registrados</td></tr>';
+            }
+        })
+        .catch(()=>{
+            tablaBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar</td></tr>';
+        });
+}
+
+// Efecto hover mejorado para las tarjetas
+document.querySelectorAll('.module-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+    });
+});
+</script>
+{% endblock %}

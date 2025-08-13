@@ -1,0 +1,564 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Ayuda - Mindara{% endblock %}
+
+{% block content %}
+<!-- Header profesional de ayuda -->
+<div class="ayuda-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Centro de Ayuda</h1>
+                <p class="lead">Todo lo que necesitas saber para usar Mindara de manera efectiva</p>
+                <p class="text-muted">Actualizado: Agosto 2025 - Incluye las últimas funcionalidades</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Navegación interna -->
+    <div class="help-nav">
+        <h4>Navegación Rápida</h4>
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link" href="#eventos">Gestión de Eventos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#perfil">Mi Perfil</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportes">Sistema de Reportes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#notificaciones">Notificaciones</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#usuarios">Gestión de Usuarios</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#contacto">Contacto</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- Gestión de Eventos -->
+            <div id="eventos" class="help-card">
+                <div class="card-header">
+                    <br>
+                    <h3>📅 Gestión de Eventos</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Crear un Nuevo Evento</h5>
+                    <ul>
+                        <li>Haz clic en el botón "Crear Evento" en el calendario</li>
+                        <li>Completa todos los campos obligatorios: título, fecha, hora de inicio</li>
+                        <li>Selecciona la duración del evento (predefinida o personalizada)</li>
+                        <li>Agrega ubicación, descripción y participantes</li>
+                        <li>Configura la prioridad del evento (baja, media, alta)</li>
+                        <li>Puedes agregar archivos de PowerPoint en la sección "Carpeta Ejecutiva"</li>
+                    </ul>
+
+                    <h5>Editar Eventos Existentes</h5>
+                    <ul>
+                        <li>Haz clic directamente sobre cualquier evento en el calendario</li>
+                        <li>Se abrirá un modal con los detalles del evento</li>
+                        <li>Haz clic en "Editar Evento" para modificar la información</li>
+                        <li>Los cambios se guardan automáticamente</li>
+                        <li>Solo puedes editar eventos que hayas creado o si tienes permisos administrativos</li>
+                    </ul>
+
+                    <h5>Estados y Etapas de Eventos</h5>
+                    <ul>
+                        <li><strong>Planificación:</strong> Evento en fase inicial de organización</li>
+                        <li><strong>Revisión:</strong> Evento pendiente de aprobación</li>
+                        <li><strong>Confirmado:</strong> Evento aprobado y listo para ejecutar</li>
+                        <li><strong>Cancelado:</strong> Evento cancelado</li>
+                    </ul>
+
+                    <h5>Gestión de Archivos PowerPoint</h5>
+                    <ul>
+                        <li>Los eventos pueden incluir enlaces a presentaciones PowerPoint</li>
+                        <li>Los archivos se muestran con un indicador visual especial (📊)</li>
+                        <li>Solo usuarios con permisos pueden agregar o modificar estos enlaces</li>
+                        <li>La "Carpeta Ejecutiva" permite organizar presentaciones importantes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Mi Perfil -->
+             <br>
+            <div id="perfil" class="help-card">
+                <div class="card-header">
+                    <br>
+                    <h3>👤 Mi Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Información Personal</h5>
+                    <ul>
+                        <li>Actualiza tu nombre, apellidos y correo electrónico</li>
+                        <li>La información se guarda automáticamente</li>
+                        <li><strong>Nota:</strong> Por seguridad, no puedes cambiar tu contraseña desde el perfil</li>
+                        <li>Contacta al administrador para cambios de contraseña</li>
+                    </ul>
+
+                    <h5>Notificaciones en el Perfil</h5>
+                    <ul>
+                        <li>Visualiza las últimas 10 notificaciones importantes</li>
+                        <li>Las notificaciones se marcan como leídas automáticamente al verlas</li>
+                        <li>Haz clic en "Ver todas las notificaciones" para acceso completo</li>
+                        <li>Las notificaciones expiradas se ocultan automáticamente</li>
+                    </ul>
+
+                    <h5>Estadísticas Personales</h5>
+                    <ul>
+                        <li>Consulta el total de eventos que has creado</li>
+                        <li>Ve eventos activos y completados</li>
+                        <li>Revisa tus últimas actividades en el sistema</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sistema de Reportes -->
+                        <!-- Reportes -->
+            <div id="reportes" class="help-card">
+                <div class="card-header">
+                    <br>
+                    <h3>📊 Reportes de Eventos</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Tipos de Reportes Disponibles</h5>
+                    <ul>
+                        <li><strong>Eventos en Agenda:</strong> Listado de todos los eventos futuros</li>
+                        <li><strong>Eventos de la Semana:</strong> Eventos programados para los próximos 7 días</li>
+                        <li><strong>Eventos del Mes:</strong> Eventos del mes actual</li>
+                        <li><strong>Eventos con Carpeta Ejecutiva:</strong> Solo eventos que incluyen presentaciones</li>
+                    </ul>
+
+                    <h5>Formatos de Exportación</h5>
+                    <ul>
+                        <li><strong>Excel (.xlsx):</strong> Ideal para análisis de datos y manipulación</li>
+                        <li><strong>PDF:</strong> Perfecto para presentaciones e impresión</li>
+                        <li>Ambos formatos incluyen el logo corporativo automáticamente</li>
+                        <li>Fechas y horas se muestran en español con zona horaria correcta</li>
+                    </ul>
+
+                    <h5>Opciones de Personalización</h5>
+                    <ul>
+                        <li><strong>Incluir Detalles:</strong> Agrega información extendida de cada evento</li>
+                        <li><strong>Solo Confirmados:</strong> Filtra únicamente eventos en estado confirmado</li>
+                        <li>Los reportes se generan con marca de tiempo local (México)</li>
+                        <li>Descarga automática al completar la generación</li>
+                    </ul>
+
+                    <h5>Notificaciones de Reportes</h5>
+                    <ul>
+                        <li>Notificación toast elegante en esquina superior derecha</li>
+                        <li>Confirmación automática: "Reporte generado y descargado exitosamente"</li>
+                        <li>Las notificaciones desaparecen automáticamente después de 4 segundos</li>
+                        <li>No requieren intervención manual del usuario</li>
+                    </ul>
+
+                    <h5>Historial de Reportes</h5>
+                    <ul>
+                        <li>Consulta todos los reportes que has generado anteriormente</li>
+                        <li>Información detallada: fecha, tipo, formato, y total de eventos</li>
+                        <li>Los registros se mantienen para auditoría y seguimiento</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sistema de Notificaciones -->
+                        <!-- Notificaciones -->
+            <div id="notificaciones" class="help-card">
+                <div class="card-header">
+                    <br>
+                    <h3>🔔 Notificaciones</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Tipos de Notificaciones</h5>
+                    <ul>
+                        <li><strong>Notificaciones del Sistema:</strong> Actualizaciones importantes</li>
+                        <li><strong>Recordatorios de Eventos:</strong> Próximos eventos programados</li>
+                        <li><strong>Notificaciones Administrativas:</strong> Mensajes de gestión</li>
+                    </ul>
+
+                    <h5>Gestión de Notificaciones</h5>
+                    <ul>
+                        <li>Accede desde el perfil o el menú principal</li>
+                        <li>Las notificaciones se marcan como leídas automáticamente</li>
+                        <li>Paginación para manejar grandes volúmenes de notificaciones</li>
+                        <li>Las notificaciones expiradas se ocultan automáticamente</li>
+                    </ul>
+
+                    <h5>Visualización en el Perfil</h5>
+                    <ul>
+                        <li>Las últimas 10 notificaciones aparecen en tu perfil</li>
+                        <li>Contador total de notificaciones disponibles</li>
+                        <li>Acceso directo a todas las notificaciones</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Gestión de Usuarios -->
+            <div id="usuarios" class="help-card">
+                <div class="card-header">
+                    <br>
+                    <h3><i class="fas fa-users"></i> Gestión de Usuarios y Permisos</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Tipos de Usuario</h5>
+                    <ul>
+                        <li><strong>Admin:</strong> Acceso completo al sistema, puede gestionar usuarios y eventos</li>
+                        <li><strong>Manager:</strong> Puede crear, editar y eliminar eventos, gestionar equipos</li>
+                        <li><strong>User:</strong> Puede ver eventos y crear eventos básicos</li>
+                    </ul>
+
+                    <h5>Permisos por Rol</h5>
+                    <ul>
+                        <li><strong>Admins y Managers:</strong> Ven todos los eventos del sistema</li>
+                        <li><strong>Usuarios básicos:</strong> Solo ven sus propios eventos</li>
+                        <li><strong>Reportes:</strong> Acceso según nivel de usuario</li>
+                        <li><strong>Carpeta Ejecutiva:</strong> Solo Admins y Managers pueden gestionarla</li>
+                    </ul>
+
+                    <h5>Navegación del Sistema</h5>
+                    <ul>
+                        <li><strong>Dashboard:</strong> Pantalla principal con resumen de actividades</li>
+                        <li><strong>Eventos:</strong> Gestión completa del calendario</li>
+                        <li><strong>Reportes:</strong> Generación y descarga de informes</li>
+                        <li><strong>Mi Perfil:</strong> Información personal y notificaciones</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de contacto profesional -->
+<div class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 id="contacto">📞 ¿Necesitas Ayuda Adicional?</h2>
+                <p>Si no encuentras la respuesta que buscas, nuestro equipo de soporte está aquí para ayudarte.</p>
+                
+                <div class="contact-info">
+                    <h4>Contacto de Soporte</h4>
+                    <p>Para soporte técnico, consultas sobre reportes, notificaciones o reportar problemas:</p>
+                    <a href="mailto:develop.serve010@passinbox.com" class="email">
+                        <i class="fas fa-envelope"></i> develop.serve010@passinbox.com
+                    </a>
+                    <p class="mt-3"><small>Tiempo de respuesta típico: 24-48 horas</small></p>
+                    
+                    <div class="mt-4">
+                        <h5>Temas de Soporte Más Comunes:</h5>
+                        <ul class="support-topics">
+                            <li><i class="fas fa-file-export"></i> Problemas con generación de reportes</li>
+                            <li><i class="fas fa-bell"></i> Configuración de notificaciones</li>
+                            <li><i class="fas fa-calendar-alt"></i> Gestión avanzada de eventos</li>
+                            <li><i class="fas fa-users"></i> Permisos y gestión de usuarios</li>
+                            <li><i class="fas fa-cog"></i> Configuración del sistema</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Nuevas características destacadas -->
+                <div class="feature-highlight mt-5">
+                    <h4><i class="fas fa-star"></i> Nuevas Características - Agosto 2025</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-chart-bar"></i> Sistema de Reportes Avanzado</h6>
+                                <p>Genera reportes en Excel y PDF con logo corporativo, fechas en español y notificaciones automáticas.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-user-cog"></i> Perfil Mejorado</h6>
+                                <p>Integración completa con notificaciones, estadísticas personales y gestión simplificada.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-clock"></i> Zona Horaria México</h6>
+                                <p>Todas las fechas y horas se muestran correctamente en tiempo de México.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-magic"></i> Notificaciones Toast</h6>
+                                <p>Notificaciones elegantes que aparecen automáticamente y se ocultan sin intervención.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Navegación suave para los enlaces internos
+    document.querySelectorAll('.help-nav .nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Remover clase active de todos los enlaces
+                document.querySelectorAll('.help-nav .nav-link').forEach(function(navLink) {
+                    navLink.classList.remove('active');
+                });
+                
+                // Agregar clase active al enlace clickeado
+                this.classList.add('active');
+                
+                // Scroll suave al elemento
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Activar automáticamente el enlace basado en la sección visible
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                const activeId = entry.target.id;
+                document.querySelectorAll('.help-nav .nav-link').forEach(function(link) {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + activeId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { threshold: 0.5 });
+
+    // Observar todas las secciones
+    document.querySelectorAll('[id]').forEach(function(section) {
+        observer.observe(section);
+    });
+});
+</script>
+
+<style>
+.support-topics {
+    list-style: none;
+    padding: 0;
+}
+
+.support-topics li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+}
+
+.support-topics li:last-child {
+    border-bottom: none;
+}
+
+.support-topics i {
+    color: #3498db;
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.feature-highlight {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid #dee2e6;
+}
+
+.feature-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #e3e6f0;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.feature-card h6 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.feature-card i {
+    color: #28a745;
+    margin-right: 10px;
+}
+
+.support-topics i {
+    color: #3498db;
+    margin-right: 12px;
+    width: 20px;
+}
+
+.feature-highlight h4 i {
+    color: #f39c12;
+    margin-right: 10px;
+}
+
+.contact-section h2 i {
+    color: #3498db;
+    margin-right: 12px;
+    font-size: 1.4rem;
+    width: 24px;
+    text-align: center;
+}
+
+.feature-highlight h4 {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.feature-highlight h4 i {
+    color: #f39c12;
+    margin-right: 12px;
+    font-size: 1.3rem;
+    width: 24px;
+    text-align: center;
+}
+
+.feature-card h6 {
+    display: flex;
+    align-items: center;
+}
+
+.feature-card i {
+    color: #28a745;
+    margin-right: 12px;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Asegurar que FontAwesome se cargue correctamente */
+i.fas, i.far, i.fab {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "FontAwesome" !important;
+    font-weight: 900;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fallback para iconos si FontAwesome no carga */
+.fa-calendar-alt::before { content: "📅"; }
+.fa-user-circle::before { content: "👤"; }
+.fa-file-export::before { content: "📊"; }
+.fa-bell::before { content: "🔔"; }
+.fa-users::before { content: "👥"; }
+.fa-headset::before { content: "🎧"; }
+.fa-envelope::before { content: "✉️"; }
+.fa-star::before { content: "⭐"; }
+.fa-chart-bar::before { content: "📊"; }
+.fa-user-cog::before { content: "⚙️"; }
+.fa-clock::before { content: "🕐"; }
+.fa-magic::before { content: "✨"; }
+.fa-cog::before { content: "⚙️"; }
+
+.contact-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-top: 2rem;
+}
+
+.contact-section h2, 
+.contact-section h4, 
+.contact-section h5, 
+.contact-section p {
+    color: white !important;
+}
+
+.contact-info {
+    color: white;
+}
+
+.contact-info p {
+    color: #ecf0f1 !important;
+}
+
+.email {
+    display: inline-flex;
+    align-items: center;
+    color: #3498db !important;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+}
+
+.email:hover {
+    color: #5dade2 !important;
+    text-decoration: none;
+}
+
+.email i {
+    margin-right: 8px;
+}
+
+.help-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid #e3e6f0;
+}
+
+.help-card .card-header {
+    background: none;
+    border: none;
+    padding: 0 0 1rem 0;
+    text-align: center;
+}
+
+.help-card .card-header h3 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.help-card .card-header i {
+    color: #28a745;
+    margin-right: 12px;
+    font-size: 1.3rem;
+    width: 24px;
+    text-align: center;
+    display: inline-block;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    margin-left: 8px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Eliminar Notificación - Mindara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-confirmation {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+    }
+    
+    .notification-preview {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        backdrop-filter: blur(10px);
+    }
+    
+    .warning-icon {
+        font-size: 4rem;
+        opacity: 0.8;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-danger-custom {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger-custom:hover {
+        background: white;
+        color: #dc3545;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-secondary-custom {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: white;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-trash me-2"></i>
+Eliminar Notificación
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="delete-confirmation">
+                <div class="text-center mb-4">
+                    <i class="fas fa-exclamation-triangle warning-icon mb-3"></i>
+                    <h3 class="mb-2">¿Confirmar Eliminación?</h3>
+                    <p class="mb-0" style="opacity: 0.9;">
+                        Esta acción no se puede deshacer. La notificación será eliminada permanentemente.
+                    </p>
+                </div>
+                
+                <!-- Vista previa de la notificación -->
+                <div class="notification-preview">
+                    <div class="d-flex align-items-start">
+                        <div class="notification-icon me-3">
+                            {% if object.prioridad == 'alta' %}
+                                <i class="fas fa-exclamation-circle fa-2x"></i>
+                            {% elif object.prioridad == 'media' %}
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            {% else %}
+                                <i class="fas fa-bell fa-2x"></i>
+                            {% endif %}
+                        </div>
+                        <div class="notification-content flex-grow-1">
+                            <h5 class="mb-2">{{ object.titulo }}</h5>
+                            <p class="mb-2">{{ object.mensaje|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ object.fecha_creacion|date:"d/m/Y H:i" }}
+                                </small>
+                                <span class="badge bg-light text-dark">
+                                    {{ object.get_prioridad_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-tag fa-2x mb-2" style="opacity: 0.7;"></i>
+                            <div>
+                                <strong>Tipo</strong><br>
+                                <span style="opacity: 0.8;">{{ object.get_tipo_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-users fa-2x mb-2" style="opacity: 0.7;"></i>
+                            <div>
+                                <strong>Destinatarios</strong><br>
+                                <span style="opacity: 0.8;">
+                                    {% if object.usuarios_objetivo.all %}
+                                        {{ object.usuarios_objetivo.count }} específicos
+                                    {% elif object.nivel_usuario_objetivo %}
+                                        {{ object.get_nivel_usuario_objetivo_display }}s
+                                    {% else %}
+                                        Todos los usuarios
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-{% if object.activa %}check-circle{% else %}times-circle{% endif %} fa-2x mb-2" style="opacity: 0.7;"></i>
+                            <div>
+                                <strong>Estado</strong><br>
+                                <span style="opacity: 0.8;">
+                                    {% if object.activa %}Activa{% else %}Inactiva{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Advertencias -->
+                <div class="alert alert-warning bg-transparent border-warning text-white">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Consecuencias de la eliminación:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>La notificación desaparecerá de todos los usuarios</li>
+                        <li>Se perderán los registros de lectura asociados</li>
+                        <li>Esta acción no se puede revertir</li>
+                        {% if object.activa %}
+                        <li class="text-warning"><strong>⚠️ La notificación está actualmente activa</strong></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <!-- Formulario de confirmación -->
+                <form method="post" class="text-center">
+                    {% csrf_token %}
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'notificaciones:lista' %}" class="btn btn-secondary-custom btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        
+                        <button type="submit" class="btn btn-danger-custom btn-lg" id="confirmDelete">
+                            <i class="fas fa-trash me-2"></i>
+                            Eliminar Definitivamente
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Alternativa -->
+                <div class="text-center mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2);">
+                    <p class="mb-2" style="opacity: 0.8;">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>¿Consideras una alternativa?</strong>
+                    </p>
+                    <a href="{% url 'notificaciones:editar' object.pk %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-toggle-off me-1"></i>
+                        Solo Desactivar Notificación
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButton = document.getElementById('confirmDelete');
+    let clickCount = 0;
+    
+    deleteButton.addEventListener('click', function(e) {
+        clickCount++;
+        
+        if (clickCount === 1) {
+            e.preventDefault();
+            this.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>¿Estás seguro? Haz clic nuevamente';
+            this.classList.add('btn-warning');
+            this.classList.remove('btn-danger-custom');
+            
+            // Reset después de 3 segundos
+            setTimeout(function() {
+                deleteButton.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar Definitivamente';
+                deleteButton.classList.remove('btn-warning');
+                deleteButton.classList.add('btn-danger-custom');
+                clickCount = 0;
+            }, 3000);
+        }
+        // En el segundo clic, permitir que el formulario se envíe
+    });
+});
+</script>
+{% endblock %}

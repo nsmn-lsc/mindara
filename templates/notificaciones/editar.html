@@ -1,0 +1,344 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Editar Notificación - Mindara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .form-section h5 {
+        color: #007bff;
+        margin-bottom: 1rem;
+    }
+    
+    .preview-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .priority-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .priority-alta { background-color: #dc3545; color: white; }
+    .priority-media { background-color: #ffc107; color: #212529; }
+    .priority-baja { background-color: #28a745; color: white; }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-edit me-2"></i>
+Editar Notificación
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" id="notificacionForm">
+                {% csrf_token %}
+                
+                <!-- Información básica -->
+                <div class="form-section">
+                    <h5><i class="fas fa-info-circle me-2"></i>Información Básica</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                                    <strong>{{ form.titulo.label }}</strong>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.titulo }}
+                                {% if form.titulo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.titulo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.prioridad.id_for_label }}" class="form-label">
+                                    <strong>{{ form.prioridad.label }}</strong>
+                                </label>
+                                {{ form.prioridad }}
+                                {% if form.prioridad.errors %}
+                                    <div class="text-danger small mt-1">{{ form.prioridad.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.mensaje.id_for_label }}" class="form-label">
+                            <strong>{{ form.mensaje.label }}</strong>
+                            <span class="text-danger">*</span>
+                        </label>
+                        {{ form.mensaje }}
+                        {% if form.mensaje.errors %}
+                            <div class="text-danger small mt-1">{{ form.mensaje.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                    <strong>{{ form.tipo.label }}</strong>
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.tipo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.fecha_expiracion.id_for_label }}" class="form-label">
+                                    <strong>{{ form.fecha_expiracion.label }}</strong>
+                                </label>
+                                {{ form.fecha_expiracion }}
+                                {% if form.fecha_expiracion.errors %}
+                                    <div class="text-danger small mt-1">{{ form.fecha_expiracion.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destinatarios -->
+                <div class="form-section">
+                    <h5><i class="fas fa-users me-2"></i>Destinatarios</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.nivel_usuario_objetivo.id_for_label }}" class="form-label">
+                                    <strong>{{ form.nivel_usuario_objetivo.label }}</strong>
+                                </label>
+                                {{ form.nivel_usuario_objetivo }}
+                                {% if form.nivel_usuario_objetivo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.nivel_usuario_objetivo.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Deja vacío para enviar a todos los usuarios
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.usuarios_objetivo.id_for_label }}" class="form-label">
+                            <strong>{{ form.usuarios_objetivo.label }}</strong>
+                        </label>
+                        {{ form.usuarios_objetivo }}
+                        {% if form.usuarios_objetivo.errors %}
+                            <div class="text-danger small mt-1">{{ form.usuarios_objetivo.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Selecciona usuarios específicos (opcional). Si seleccionas usuarios específicos, se enviará solo a ellos.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Estado de la notificación -->
+                <div class="form-section">
+                    <h5><i class="fas fa-toggle-on me-2"></i>Estado</h5>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   {% if object.activa %}checked{% endif %}
+                                   name="activa" id="activa">
+                            <label class="form-check-label" for="activa">
+                                <strong>Notificación activa</strong>
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Solo las notificaciones activas son visibles para los usuarios
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Información:</strong> Esta notificación fue creada el {{ object.fecha_creacion|date:"d/m/Y H:i" }} 
+                        por {{ object.creado_por.get_full_name|default:object.creado_por.username }}.
+                        {% if object.fecha_expiracion %}
+                            {% if object.esta_expirada %}
+                                <br><span class="text-warning">⚠️ Esta notificación ha expirado.</span>
+                            {% else %}
+                                <br>Expirará el {{ object.fecha_expiracion|date:"d/m/Y H:i" }}.
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'notificaciones:lista' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver
+                    </a>
+                    <div>
+                        <button type="button" class="btn btn-outline-primary me-2" onclick="previewNotification()">
+                            <i class="fas fa-eye me-1"></i>
+                            Vista Previa
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Panel de vista previa -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 2rem;">
+                <h5><i class="fas fa-eye me-2"></i>Vista Previa</h5>
+                <div id="notificationPreview" class="preview-card">
+                    <div class="d-flex align-items-start">
+                        <div class="notification-icon me-3">
+                            <i class="fas fa-bell fa-2x" id="previewIcon"></i>
+                        </div>
+                        <div class="notification-content flex-grow-1">
+                            <h6 class="mb-2" id="previewTitle">{{ object.titulo }}</h6>
+                            <p class="mb-2" id="previewMessage">{{ object.mensaje }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small id="previewDate">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                                <span class="priority-badge priority-{{ object.prioridad }}" id="previewPriority">
+                                    {{ object.get_prioridad_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="mt-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                Información
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <strong>Destinatarios:</strong>
+                                    <span id="previewRecipients">
+                                        {% if object.usuarios_objetivo.all %}
+                                            {{ object.usuarios_objetivo.count }} usuarios específicos
+                                        {% elif object.nivel_usuario_objetivo %}
+                                            {{ object.get_nivel_usuario_objetivo_display }}s
+                                        {% else %}
+                                            Todos los usuarios
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Tipo:</strong>
+                                    <span id="previewType">{{ object.get_tipo_display }}</span>
+                                </li>
+                                <li>
+                                    <strong>Expiración:</strong>
+                                    <span id="previewExpiration">
+                                        {% if object.fecha_expiracion %}
+                                            {{ object.fecha_expiracion|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            Sin expiración
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar vista previa en tiempo real
+    document.getElementById('{{ form.titulo.id_for_label }}').addEventListener('input', updatePreview);
+    document.getElementById('{{ form.mensaje.id_for_label }}').addEventListener('input', updatePreview);
+    document.getElementById('{{ form.prioridad.id_for_label }}').addEventListener('change', updatePreview);
+    document.getElementById('{{ form.tipo.id_for_label }}').addEventListener('change', updatePreview);
+    document.getElementById('{{ form.nivel_usuario_objetivo.id_for_label }}').addEventListener('change', updatePreview);
+    document.getElementById('{{ form.fecha_expiracion.id_for_label }}').addEventListener('change', updatePreview);
+    
+    // Actualizar vista previa inicial
+    updatePreview();
+});
+
+function updatePreview() {
+    // Actualizar título
+    const titulo = document.getElementById('{{ form.titulo.id_for_label }}').value || 'Título de la notificación';
+    document.getElementById('previewTitle').textContent = titulo;
+    
+    // Actualizar mensaje
+    const mensaje = document.getElementById('{{ form.mensaje.id_for_label }}').value || 'Mensaje de la notificación aparecerá aquí...';
+    document.getElementById('previewMessage').textContent = mensaje;
+    
+    // Actualizar prioridad
+    const prioridad = document.getElementById('{{ form.prioridad.id_for_label }}').value || 'media';
+    const priorityElement = document.getElementById('previewPriority');
+    priorityElement.className = 'priority-badge priority-' + prioridad;
+    priorityElement.textContent = prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
+    
+    // Actualizar icono según prioridad
+    const iconElement = document.getElementById('previewIcon');
+    if (prioridad === 'alta') {
+        iconElement.className = 'fas fa-exclamation-circle fa-2x';
+    } else if (prioridad === 'media') {
+        iconElement.className = 'fas fa-info-circle fa-2x';
+    } else {
+        iconElement.className = 'fas fa-bell fa-2x';
+    }
+    
+    // Actualizar tipo
+    const tipo = document.getElementById('{{ form.tipo.id_for_label }}').value || 'general';
+    document.getElementById('previewType').textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    
+    // Actualizar destinatarios
+    const nivelUsuario = document.getElementById('{{ form.nivel_usuario_objetivo.id_for_label }}').value;
+    let recipientsText = 'Todos los usuarios';
+    if (nivelUsuario) {
+        const nivelDisplay = {
+            'ADMIN': 'Administradores',
+            'MANAGER': 'Managers',
+            'USER': 'Usuarios'
+        };
+        recipientsText = nivelDisplay[nivelUsuario] || nivelUsuario;
+    }
+    document.getElementById('previewRecipients').textContent = recipientsText;
+    
+    // Actualizar expiración
+    const fechaExpiracion = document.getElementById('{{ form.fecha_expiracion.id_for_label }}').value;
+    const expirationText = fechaExpiracion ? new Date(fechaExpiracion).toLocaleDateString('es-ES') : 'Sin expiración';
+    document.getElementById('previewExpiration').textContent = expirationText;
+}
+
+function previewNotification() {
+    // Scroll a la vista previa
+    document.getElementById('notificationPreview').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

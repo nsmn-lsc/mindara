@@ -1,0 +1,609 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Mis Notificaciones - Mindara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .notification-item.unread {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+    }
+    
+    .notification-item.priority-alta {
+        border-left-color: #dc3545;
+    }
+    
+    .notification-item.priority-media {
+        border-left-color: #ffc107;
+    }
+    
+    .notification-item.priority-baja {
+        border-left-color: #28a745;
+    }
+    
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+    }
+    
+    .filters-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+    }
+    
+    .notification-icon {
+        font-size: 2rem;
+        opacity: 0.8;
+    }
+    
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .action-btn {
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header y estadísticas mejoradas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1" style="color: #06A77D; font-weight: 600;">
+                        <i class="fas fa-bell me-3"></i>
+                        Mis Notificaciones
+                    </h2>
+                    <p class="text-muted mb-0">Mantente al día con las últimas actualizaciones</p>
+                </div>
+                <div>
+                    <a href="{% url 'frontend:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas en cards modernas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-inbox fa-2x mb-2 opacity-75"></i>
+                    <h3 class="fw-bold mb-1">{{ total_notificaciones }}</h3>
+                    <p class="mb-0 opacity-75">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 12px;">
+                <div class="card-body">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2 opacity-75"></i>
+                    <h3 class="fw-bold mb-1">{{ no_leidas_count }}</h3>
+                    <p class="mb-0 opacity-75">Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 12px;">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-2x mb-2 opacity-75"></i>
+                    <h3 class="fw-bold mb-1">{{ leidas_count }}</h3>
+                    <p class="mb-0 opacity-75">Leídas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card filters-card text-center h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    {% if no_leidas_count > 0 %}
+                    <button class="btn btn-success btn-sm" onclick="marcarTodasComoLeidas()">
+                        <i class="fas fa-check-double me-1"></i>
+                        Marcar todas leídas
+                    </button>
+                    {% else %}
+                    <i class="fas fa-smile fa-2x text-success mb-2"></i>
+                    <small class="text-muted">¡Todo al día!</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros mejorados -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card filters-card">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtros de búsqueda
+                    </h6>
+                    <form method="get" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="estado" class="form-label fw-semibold">Estado</label>
+                            <select name="estado" id="estado" class="form-select">
+                                <option value="">🔍 Todas</option>
+                                <option value="no_leidas" {% if request.GET.estado == 'no_leidas' %}selected{% endif %}>🔔 No leídas</option>
+                                <option value="leidas" {% if request.GET.estado == 'leidas' %}selected{% endif %}>✅ Leídas</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="tipo" class="form-label fw-semibold">Tipo</label>
+                            <select name="tipo" id="tipo" class="form-select">
+                                <option value="">📂 Todos</option>
+                                <option value="general" {% if request.GET.tipo == 'general' %}selected{% endif %}>📢 General</option>
+                                <option value="sistema" {% if request.GET.tipo == 'sistema' %}selected{% endif %}>⚙️ Sistema</option>
+                                <option value="evento" {% if request.GET.tipo == 'evento' %}selected{% endif %}>📅 Evento</option>
+                                <option value="personal" {% if request.GET.tipo == 'personal' %}selected{% endif %}>👤 Personal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="buscar" class="form-label fw-semibold">Buscar</label>
+                            <input type="text" name="buscar" id="buscar" class="form-control" 
+                                   placeholder="🔍 Buscar en título o mensaje..." value="{{ request.GET.buscar }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2" style="border-radius: 8px;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'notificaciones:mis_notificaciones' %}" class="btn btn-outline-secondary" style="border-radius: 8px;">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de notificaciones mejorada -->
+    <div class="row">
+        <div class="col-12">
+            <div class="notifications-list">
+                {% for item in notificaciones %}
+                <div class="card notification-item {% if not item.leida %}unread{% endif %} priority-{{ item.notificacion.prioridad }}" 
+                     data-notification-id="{{ item.notificacion.id }}">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="notification-icon">
+                                    {% if item.notificacion.tipo == 'sistema' %}
+                                        <i class="fas fa-cog text-primary"></i>
+                                    {% elif item.notificacion.tipo == 'evento' %}
+                                        <i class="fas fa-calendar-alt text-info"></i>
+                                    {% elif item.notificacion.tipo == 'personal' %}
+                                        <i class="fas fa-user text-secondary"></i>
+                                    {% elif item.notificacion.prioridad == 'alta' %}
+                                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                                    {% else %}
+                                        <i class="fas fa-bell text-primary"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="card-title mb-0 me-2">{{ item.notificacion.titulo }}</h5>
+                                    {% if not item.leida %}
+                                        <span class="badge bg-primary priority-badge">Nueva</span>
+                                    {% endif %}
+                                    <span class="badge priority-badge ms-1" style="background-color: 
+                                        {% if item.notificacion.prioridad == 'alta' %}#dc3545{% elif item.notificacion.prioridad == 'media' %}#ffc107{% else %}#28a745{% endif %}; 
+                                        color: {% if item.notificacion.prioridad == 'media' %}#212529{% else %}white{% endif %};">
+                                        {% if item.notificacion.prioridad == 'alta' %}🔴 Alta
+                                        {% elif item.notificacion.prioridad == 'media' %}🟡 Media
+                                        {% else %}🟢 Baja{% endif %}
+                                    </span>
+                                </div>
+                                <p class="card-text mb-2" style="color: #555;">{{ item.notificacion.mensaje }}</p>
+                                <div class="notification-meta">
+                                    <small class="text-muted d-flex flex-wrap gap-3">
+                                        <span>
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ item.notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                                        </span>
+                                        {% if item.leida %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check me-1"></i>
+                                                Leído el {{ item.fecha_lectura|date:"d/m/Y H:i" }}
+                                            </span>
+                                        {% endif %}
+                                        {% if item.notificacion.fecha_expiracion %}
+                                            <span class="{% if item.notificacion.esta_expirada %}text-danger{% else %}text-warning{% endif %}">
+                                                <i class="fas fa-hourglass-end me-1"></i>
+                                                {% if item.notificacion.esta_expirada %}
+                                                    Expiró el {{ item.notificacion.fecha_expiracion|date:"d/m/Y" }}
+                                                {% else %}
+                                                    Expira el {{ item.notificacion.fecha_expiracion|date:"d/m/Y" }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                {% if not item.leida %}
+                                <button class="btn btn-outline-success action-btn" 
+                                        onclick="marcarComoLeida({{ item.notificacion.id }})" 
+                                        title="Marcar como leída">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% else %}
+                                <div class="action-btn" style="background: #d4edda; color: #155724;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted mb-2">No hay notificaciones</h4>
+                        <p class="text-muted">
+                            {% if request.GET.estado or request.GET.tipo or request.GET.buscar %}
+                                No se encontraron notificaciones con los filtros aplicados.
+                            {% else %}
+                                No tienes notificaciones en este momento.
+                            {% endif %}
+                        </p>
+                        {% if request.GET.estado or request.GET.tipo or request.GET.buscar %}
+                        <a href="{% url 'notificaciones:mis_notificaciones' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-times me-1"></i>
+                            Limpiar filtros
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginación mejorada -->
+    {% if is_paginated %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Paginación de notificaciones">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i> Primera
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+                                <i class="fas fa-angle-left"></i> Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+                                Siguiente <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+                                Última <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Token CSRF para las peticiones AJAX -->
+{% csrf_token %}
+<script>
+// Obtener token CSRF para AJAX
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function marcarComoLeida(notificacionId) {
+    // Mostrar indicador de carga
+    const button = document.querySelector(`[data-notification-id="${notificacionId}"] .action-btn`);
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    fetch('{% url "notificaciones:marcar_como_leida" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: new URLSearchParams({
+            'notificacion_id': notificacionId,
+            'csrfmiddlewaretoken': getCSRFToken()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar la interfaz
+            const notificationElement = document.querySelector(`[data-notification-id="${notificacionId}"]`);
+            notificationElement.classList.remove('unread');
+            
+            // Reemplazar botón con indicador de leído
+            button.outerHTML = '<div class="action-btn" style="background: #d4edda; color: #155724;"><i class="fas fa-check-circle"></i></div>';
+            
+            // Remover badge "Nueva"
+            const newBadge = notificationElement.querySelector('.badge.bg-primary');
+            if (newBadge && newBadge.textContent.trim() === 'Nueva') {
+                newBadge.remove();
+            }
+            
+            // Mostrar mensaje de éxito mejorado
+            showToast('¡Notificación marcada como leída! 📖', 'success', 'Se ha actualizado tu lista de notificaciones.');
+            
+            // Recargar después de un breve delay para actualizar contadores
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // Restaurar botón en caso de error
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            showToast('❌ Error al marcar como leída', 'error', data.error || 'Ha ocurrido un error inesperado. Inténtalo nuevamente.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        showToast('🔌 Error de conexión', 'error', 'No se pudo conectar al servidor. Verifica tu conexión a internet.');
+    });
+}
+
+function marcarTodasComoLeidas() {
+    // Crear modal de confirmación personalizado
+    const modalHtml = `
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-double me-2"></i>
+                            Confirmar acción
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-question-circle fa-3x text-warning"></i>
+                        </div>
+                        <h6 class="mb-3">¿Marcar todas las notificaciones como leídas?</h6>
+                        <p class="text-muted mb-0">
+                            Esta acción marcará <strong>${document.querySelectorAll('.notification-item.unread').length} notificaciones</strong> 
+                            como leídas y no se puede deshacer.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="confirmarMarcarTodas()">
+                            <i class="fas fa-check me-1"></i>Sí, marcar todas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Agregar modal al DOM si no existe
+    if (!document.getElementById('confirmModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.show();
+}
+
+function confirmarMarcarTodas() {
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+    modal.hide();
+    
+    // Mostrar indicador de carga en el botón original
+    const button = document.querySelector('[onclick="marcarTodasComoLeidas()"]');
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Marcando...';
+    button.disabled = true;
+    
+    fetch('{% url "notificaciones:marcar_todas_como_leidas" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: new URLSearchParams({
+            'csrfmiddlewaretoken': getCSRFToken()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensaje de éxito mejorado con animación
+            const mensaje = data.marcadas === 1 ? 
+                '¡1 notificación marcada como leída! 🎉' : 
+                `¡${data.marcadas} notificaciones marcadas como leídas! 🎉`;
+            const descripcion = data.marcadas === 1 ? 
+                'Tu lista de notificaciones se ha actualizado.' :
+                'Todas tus notificaciones pendientes han sido marcadas como leídas.';
+            
+            showToast(mensaje, 'success', descripcion);
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            showToast('❌ Error al marcar como leídas', 'error', data.error || 'Ha ocurrido un error inesperado');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        showToast('🔌 Error de conexión', 'error', 'No se pudo conectar al servidor para marcar las notificaciones.');
+    });
+}
+
+// Función mejorada para mostrar toasts/alertas
+function showToast(message, type = 'info', subtitle = '') {
+    const toastClass = type === 'success' ? 'alert-success' : 
+                      type === 'error' ? 'alert-danger' : 
+                      type === 'warning' ? 'alert-warning' :
+                      'alert-info';
+    
+    const icon = type === 'success' ? 'fas fa-check-circle' :
+                 type === 'error' ? 'fas fa-exclamation-triangle' :
+                 type === 'warning' ? 'fas fa-exclamation-circle' :
+                 'fas fa-info-circle';
+    
+    const toast = document.createElement('div');
+    toast.className = `alert ${toastClass} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = `
+        top: 20px; 
+        right: 20px; 
+        z-index: 9999; 
+        min-width: 350px; 
+        max-width: 450px;
+        border: none;
+        border-radius: 12px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    const subtitleHtml = subtitle ? `<small class="d-block opacity-75 mt-1">${subtitle}</small>` : '';
+    
+    toast.innerHTML = `
+        <div class="d-flex align-items-start">
+            <div class="me-3">
+                <i class="${icon} fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${message}</div>
+                ${subtitleHtml}
+            </div>
+            <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    // Agregar estilos de animación si no existen
+    if (!document.getElementById('toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Auto-remover después de 4 segundos con animación de salida
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+
+// Mejorar la experiencia de filtros
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit al cambiar filtros
+    const filterSelects = document.querySelectorAll('#estado, #tipo');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Enviar form al presionar Enter en búsqueda
+    const searchInput = document.getElementById('buscar');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

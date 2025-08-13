@@ -1,0 +1,188 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Ayuda - Mindara{% endblock %}
+
+{% block content %}
+<!-- Header profesional de ayuda -->
+<div class="ayuda-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Centro de Ayuda</h1>
+                <p class="lead">Todo lo que necesitas saber para usar Mindara de manera efectiva</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Navegación interna -->
+    <div class="help-nav">
+        <h4>Navegación Rápida</h4>
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link" href="#eventos">Gestión de Eventos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#usuarios">Gestión de Usuarios</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#configuracion">Configuración</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#contacto">Contacto</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- Gestión de Eventos -->
+            <div id="eventos" class="help-card">
+                <div class="card-header">
+                    <h3>Gestión de Eventos</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Crear un Nuevo Evento</h5>
+                    <ul>
+                        <li>Haz clic en el botón "Crear Evento" en el calendario</li>
+                        <li>Completa todos los campos obligatorios: título, fecha, hora de inicio y fin</li>
+                        <li>Puedes agregar archivos de PowerPoint en la sección "Carpeta Ejecutiva"</li>
+                        <li>Utiliza el campo de descripción para detalles adicionales</li>
+                    </ul>
+
+                    <h5>Editar Eventos Existentes</h5>
+                    <ul>
+                        <li>Haz clic directamente sobre cualquier evento en el calendario</li>
+                        <li>Se abrirá un modal con los detalles del evento</li>
+                        <li>Haz clic en "Editar Evento" para modificar la información</li>
+                        <li>Los cambios se guardan automáticamente</li>
+                    </ul>
+
+                    <h5>Gestión de Archivos PowerPoint</h5>
+                    <ul>
+                        <li>Los eventos pueden incluir enlaces a presentaciones PowerPoint</li>
+                        <li>Los archivos se muestran con un indicador visual especial (📊)</li>
+                        <li>Solo usuarios con permisos pueden agregar o modificar estos enlaces</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Gestión de Usuarios -->
+            <div id="usuarios" class="help-card">
+                <div class="card-header">
+                    <h3>Gestión de Usuarios y Permisos</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Tipos de Usuario</h5>
+                    <ul>
+                        <li><strong>Admin:</strong> Acceso completo al sistema, puede gestionar usuarios y eventos</li>
+                        <li><strong>Manager:</strong> Puede crear, editar y eliminar eventos, gestionar equipos</li>
+                        <li><strong>User:</strong> Puede ver eventos y crear eventos básicos</li>
+                    </ul>
+
+                    <h5>Funcionalidades por Rol</h5>
+                    <ul>
+                        <li><strong>Admins y Managers:</strong> Pueden gestionar eventos concurrentes en la misma fecha y hora</li>
+                        <li><strong>Todos los usuarios:</strong> Acceso al calendario y visualización de eventos</li>
+                        <li><strong>Permisos especiales:</strong> Solo Admins y Managers pueden agregar enlaces de PowerPoint</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Configuración del Sistema -->
+            <div id="configuracion" class="help-card">
+                <div class="card-header">
+                    <h3>Configuración del Sistema</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Calendario</h5>
+                    <ul>
+                        <li>El calendario muestra un máximo de 3 eventos por día para mejor visualización</li>
+                        <li>Eventos adicionales se muestran como "+N más"</li>
+                        <li>Utiliza las vistas de mes, semana o día según tus preferencias</li>
+                    </ul>
+
+                    <h5>Notificaciones</h5>
+                    <ul>
+                        <li>Los próximos eventos se muestran en la barra lateral</li>
+                        <li>Los eventos con PowerPoint tienen indicadores visuales especiales</li>
+                        <li>El sistema muestra automáticamente los eventos más relevantes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de contacto profesional -->
+<div class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 id="contacto">¿Necesitas Ayuda Adicional?</h2>
+                <p>Si no encuentras la respuesta que buscas, nuestro equipo de soporte está aquí para ayudarte.</p>
+                
+                <div class="contact-info">
+                    <h4>Contacto de Soporte</h4>
+                    <p>Para soporte técnico, consultas o reportar problemas:</p>
+                    <a href="mailto:develop.serve010@passinbox.com" class="email">
+                        develop.serve010@passinbox.com
+                    </a>
+                    <p class="mt-3"><small>Tiempo de respuesta típico: 24-48 horas</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Navegación suave para los enlaces internos
+    document.querySelectorAll('.help-nav .nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Remover clase active de todos los enlaces
+                document.querySelectorAll('.help-nav .nav-link').forEach(function(navLink) {
+                    navLink.classList.remove('active');
+                });
+                
+                // Agregar clase active al enlace clickeado
+                this.classList.add('active');
+                
+                // Scroll suave al elemento
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Activar automáticamente el enlace basado en la sección visible
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                const activeId = entry.target.id;
+                document.querySelectorAll('.help-nav .nav-link').forEach(function(link) {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + activeId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { threshold: 0.5 });
+
+    // Observar todas las secciones
+    document.querySelectorAll('[id]').forEach(function(section) {
+        observer.observe(section);
+    });
+});
+</script>
+{% endblock %}

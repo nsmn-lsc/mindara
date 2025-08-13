@@ -1,0 +1,234 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil - Mindara{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+    }
+    .notification-item {
+        border-left: 4px solid #007bff;
+        background: #f8f9fa;
+        margin-bottom: 0.5rem;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.3s ease;
+    }
+    .notification-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    .notification-item.general { border-left-color: #17a2b8; }
+    .notification-item.sistema { border-left-color: #6c757d; }
+    .notification-item.evento { border-left-color: #28a745; }
+    .notification-item.personal { border-left-color: #ffc107; }
+    .notification-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .user-level-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .user-level-admin {
+        background: #dc3545;
+        color: white;
+    }
+    .user-level-manager {
+        background: #fd7e14;
+        color: white;
+    }
+    .user-level-user {
+        background: #28a745;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-user-circle me-2 text-success"></i>
+                        Mi Perfil
+                    </h2>
+                    <p class="text-muted mb-0">Gestiona tu información personal y notificaciones</p>
+                </div>
+                <div>
+                    <a href="{% url 'frontend:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Información del Perfil -->
+                <div class="col-lg-4 mb-4">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4>{{ user.get_full_name|default:user.username }}</h4>
+                            <span class="user-level-badge user-level-{{ user.user_level|lower }}">
+                                {{ user.get_user_level_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="p-4">
+                            <div class="mb-3">
+                                <small class="text-muted">Email</small>
+                                <p class="mb-0">{{ user.email|default:"No especificado" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Usuario desde</small>
+                                <p class="mb-0">{{ user.date_joined|date:"d/m/Y" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Último acceso</small>
+                                <p class="mb-0">{{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Formulario de Edición -->
+                <div class="col-lg-8 mb-4">
+                    <div class="profile-card">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit text-primary me-2"></i>
+                                Editar Información Personal
+                            </h5>
+                        </div>
+                        
+                        <div class="card-body">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="first_name" class="form-label">Nombre</label>
+                                        <input type="text" class="form-control" id="first_name" 
+                                               name="first_name" value="{{ user.first_name }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Apellido</label>
+                                        <input type="text" class="form-control" id="last_name" 
+                                               name="last_name" value="{{ user.last_name }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" 
+                                           name="email" value="{{ user.email }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Nombre de usuario</label>
+                                    <input type="text" class="form-control" id="username" 
+                                           value="{{ user.username }}" readonly>
+                                    <small class="text-muted">El nombre de usuario no se puede cambiar</small>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notificaciones Recientes -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="profile-card">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bell text-warning me-2"></i>
+                                Notificaciones Recientes
+                            </h5>
+                            <div>
+                                <span class="badge bg-primary">{{ total_notificaciones }} total</span>
+                                <a href="{% url 'eventos:notificaciones' %}" class="btn btn-sm btn-outline-primary ms-2">
+                                    Ver todas
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            {% if notificaciones_recientes %}
+                                {% for notificacion in notificaciones_recientes %}
+                                    <div class="notification-item {{ notificacion.tipo|lower }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ notificacion.titulo }}</h6>
+                                                <p class="mb-1">{{ notificacion.mensaje|truncatewords:15 }}</p>
+                                                <small class="notification-date">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ notificacion.fecha_creacion|timesince }} atrás
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-{{ notificacion.tipo|lower }} ms-2">
+                                                {{ notificacion.get_tipo_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>No tienes notificaciones recientes</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

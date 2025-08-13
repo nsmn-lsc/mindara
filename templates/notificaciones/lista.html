@@ -1,0 +1,234 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Lista de Notificaciones - Mindara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #dee2e6;
+    }
+    
+    .notification-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .notification-card.priority-alta {
+        border-left-color: #dc3545;
+    }
+    
+    .notification-card.priority-media {
+        border-left-color: #ffc107;
+    }
+    
+    .notification-card.priority-baja {
+        border-left-color: #28a745;
+    }
+    
+    .notification-actions {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .notification-card:hover .notification-actions {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<i class="fas fa-bell me-2"></i>
+Gestión de Notificaciones
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header con botones de acción -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    Lista de Notificaciones
+                </h4>
+                <div>
+                    <a href="{% url 'notificaciones:crear' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Nueva Notificación
+                    </a>
+                    <a href="{% url 'notificaciones:crear_rapida' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        Envío Rápido
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select name="tipo" id="tipo" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="general" {% if request.GET.tipo == 'general' %}selected{% endif %}>General</option>
+                                <option value="sistema" {% if request.GET.tipo == 'sistema' %}selected{% endif %}>Sistema</option>
+                                <option value="evento" {% if request.GET.tipo == 'evento' %}selected{% endif %}>Evento</option>
+                                <option value="personal" {% if request.GET.tipo == 'personal' %}selected{% endif %}>Personal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="prioridad" class="form-label">Prioridad</label>
+                            <select name="prioridad" id="prioridad" class="form-select">
+                                <option value="">Todas</option>
+                                <option value="alta" {% if request.GET.prioridad == 'alta' %}selected{% endif %}>Alta</option>
+                                <option value="media" {% if request.GET.prioridad == 'media' %}selected{% endif %}>Media</option>
+                                <option value="baja" {% if request.GET.prioridad == 'baja' %}selected{% endif %}>Baja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="buscar" class="form-label">Buscar</label>
+                            <input type="text" name="buscar" id="buscar" class="form-control" 
+                                   placeholder="Título o mensaje..." value="{{ request.GET.buscar }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'notificaciones:lista' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de notificaciones -->
+            <div class="row">
+                {% for notificacion in notificaciones %}
+                <div class="col-12 mb-3">
+                    <div class="card notification-card priority-{{ notificacion.prioridad }}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-start">
+                                        <div class="notification-icon me-3">
+                                            {% if notificacion.prioridad == 'alta' %}
+                                                <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
+                                            {% elif notificacion.prioridad == 'media' %}
+                                                <i class="fas fa-info-circle text-warning fa-2x"></i>
+                                            {% else %}
+                                                <i class="fas fa-bell text-primary fa-2x"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="notification-content">
+                                            <h5 class="card-title mb-1">{{ notificacion.titulo }}</h5>
+                                            <p class="card-text text-muted mb-2">{{ notificacion.mensaje|truncatewords:20 }}</p>
+                                            <div class="notification-meta">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    {{ notificacion.creado_por.get_full_name|default:notificacion.creado_por.username }}
+                                                    <span class="ms-3">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                                                    </span>
+                                                    <span class="ms-3">
+                                                        <i class="fas fa-users me-1"></i>
+                                                        {% if notificacion.usuarios_objetivo.all %}
+                                                            {{ notificacion.usuarios_objetivo.count }} usuarios específicos
+                                                        {% elif notificacion.nivel_usuario_objetivo %}
+                                                            Todos los {{ notificacion.get_nivel_usuario_objetivo_display }}s
+                                                        {% else %}
+                                                            Todos los usuarios
+                                                        {% endif %}
+                                                    </span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="notification-status">
+                                            {% if notificacion.fecha_expiracion %}
+                                                {% if notificacion.esta_expirada %}
+                                                    <span class="badge bg-secondary">Expirada</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Activa</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-info">Sin expiración</span>
+                                            {% endif %}
+                                            <span class="badge bg-{{ notificacion.prioridad|default:'primary' }} ms-1">
+                                                {{ notificacion.get_prioridad_display }}
+                                            </span>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <a href="{% url 'notificaciones:editar' notificacion.pk %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'notificaciones:eliminar' notificacion.pk %}" 
+                                               class="btn btn-sm btn-outline-danger ms-1" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay notificaciones</h5>
+                            <p class="text-muted">No se encontraron notificaciones con los filtros aplicados.</p>
+                            <a href="{% url 'notificaciones:crear' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Primera Notificación
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+            <nav aria-label="Paginación de notificaciones">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

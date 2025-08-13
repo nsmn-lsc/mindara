@@ -1,0 +1,361 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/mindara.css' %}" rel="stylesheet">
+<style>
+.table-actions {
+    white-space: nowrap;
+}
+
+.report-status {
+    font-size: 0.875rem;
+}
+
+.file-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.file-size {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.btn-group .btn {
+    border-radius: 8px !important;
+    margin: 0 2px;
+}
+
+.badge {
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+}
+
+.badge-dark {
+    background-color: #343a40 !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Sistema de Toast mejorado */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 350px;
+}
+
+.custom-toast {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.custom-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.custom-toast.hiding {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.custom-toast .toast-header {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 12px 12px 0 0;
+    color: white;
+    font-weight: 600;
+}
+
+.custom-toast .toast-body {
+    padding: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.toast-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+
+/* Animación de pulsación para el icono */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.custom-toast .toast-icon {
+    animation: pulse 0.6s ease-in-out;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+            <a href="{% url 'reportes:index' %}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Generar Nuevo Reporte
+            </a>
+        </div>
+
+    <!-- Alertas -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Contenedor de Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Tabla de Reportes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-success">
+                <i class="fas fa-history"></i> Historial de Reportes Generados
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if reportes %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Tipo de Reporte</th>
+                                <th>Formato</th>
+                                <th>Fecha de Generación</th>
+                                <th>Total Eventos</th>
+                                <th>Título</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reporte in reportes %}
+                            <tr>
+                                <td>
+                                    {% if reporte.tipo == 'agenda' %}
+                                        <i class="fas fa-calendar-alt text-success"></i> Agenda Completa
+                                    {% elif reporte.tipo == 'semana' %}
+                                        <i class="fas fa-calendar-week text-success"></i> Eventos de la Semana
+                                    {% elif reporte.tipo == 'mes' %}
+                                        <i class="fas fa-calendar text-success"></i> Eventos del Mes
+                                    {% elif reporte.tipo == 'carpeta_ejecutiva' %}
+                                        <i class="fas fa-briefcase text-success"></i> Carpeta Ejecutiva
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reporte.formato == 'xlsx' %}
+                                        <span class="file-icon text-success">
+                                            <i class="fas fa-file-excel"></i>
+                                        </span>
+                                        Excel
+                                    {% else %}
+                                        <span class="file-icon text-danger">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </span>
+                                        PDF
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>{{ reporte.fecha_generacion|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">{{ reporte.fecha_generacion|time:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-dark">{{ reporte.total_eventos }}</span>
+                                    evento{{ reporte.total_eventos|pluralize }}
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold">{{ reporte.titulo }}</div>
+                                    {% if reporte.incluir_detalles %}
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle"></i> Con detalles
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-minus-circle"></i> Sin detalles
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center table-actions">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success" 
+                                                data-toggle="tooltip" 
+                                                title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success" 
+                                                data-toggle="tooltip" 
+                                                title="Regenerar reporte">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Total de Reportes
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            {{ reportes.count }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Último Reporte
+                                        </div>
+                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                            {% if reportes %}
+                                                {{ reportes.first.fecha_generacion|date:"d/m/Y H:i" }}
+                                            {% else %}
+                                                Sin reportes
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Estado vacío -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-file-alt fa-5x text-gray-300"></i>
+                    </div>
+                    <h5 class="text-muted">No tienes reportes generados</h5>
+                    <p class="text-muted mb-4">
+                        Comienza generando tu primer reporte de eventos.
+                    </p>
+                    <a href="{% url 'reportes:index' %}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Generar Primer Reporte
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}{% block extra_js %}
+<script>
+    // Función para mostrar toast personalizado
+    function showCustomToast(message, type = 'success', duration = 4000) {
+        const toastContainer = document.getElementById('toast-container');
+        
+        // Crear el toast
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle toast-icon"></i>
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        
+        // Mostrar el toast
+        setTimeout(() => {
+            toastElement.classList.add('show');
+        }, 100);
+        
+        // Ocultar automáticamente después del tiempo especificado
+        setTimeout(() => {
+            toastElement.classList.add('hiding');
+            setTimeout(() => {
+                if (toastElement.parentNode) {
+                    toastElement.parentNode.removeChild(toastElement);
+                }
+            }, 400);
+        }, duration);
+    }
+
+    $(document).ready(function() {
+        // Inicializar tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        // Manejar todas las acciones con event delegation
+        $(document).on('click', '.btn-outline-success', function() {
+            const row = $(this).closest('tr');
+            const titulo = row.find('td:nth-child(5) .font-weight-bold').text();
+            const tipoCompleto = row.find('td:first').text().trim();
+            const totalEventos = row.find('td:nth-child(4) .badge').text();
+            const tooltip = $(this).attr('title') || $(this).attr('data-original-title');
+            
+            if (tooltip === 'Regenerar reporte') {
+                if (confirm('¿Deseas regenerar este reporte?')) {
+                    // Simular proceso de regeneración
+                    showCustomToast('Regenerando reporte...', 'info', 2000);
+                    
+                    setTimeout(() => {
+                        showCustomToast('Reporte regenerado exitosamente', 'success', 4000);
+                    }, 2500);
+                }
+            } else if (tooltip === 'Ver detalles') {
+                showCustomToast(`Detalles: ${titulo} - ${totalEventos} eventos`, 'success', 4000);
+            }
+        });
+    });
+</script>
+{% endblock %}
