@@ -47,4 +47,4 @@ services:
 
 databases:
   - name: mindara-db
-  plan: basic  # Cambio de free a basic (plan de pago)
+    plan: basic  # Cambio de free a basic (plan de pago)
