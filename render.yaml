@@ -47,4 +47,4 @@ services:
 
 databases:
   - name: mindara-db
-    plan: starter  # Cambio de free a starter (plan de pago)
+    plan: Basic  # Starter es legacy; usar plan soportado (standard)
