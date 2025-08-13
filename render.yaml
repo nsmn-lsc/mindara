@@ -3,6 +3,7 @@ services:
     name: mindara
     env: python
     plan: free
+    healthCheckPath: /healthz
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
@@ -23,25 +24,25 @@ services:
       - key: DB_ENGINE
         value: django.db.backends.postgresql
       - key: DB_NAME
-        fromDatabase: true
-        name: mindara-db
-        property: database
+        fromDatabase:
+          name: mindara-db
+          property: database
       - key: DB_USER
-        fromDatabase: true
-        name: mindara-db
-        property: user
+        fromDatabase:
+          name: mindara-db
+          property: user
       - key: DB_PASSWORD
-        fromDatabase: true
-        name: mindara-db
-        property: password
+        fromDatabase:
+          name: mindara-db
+          property: password
       - key: DB_HOST
-        fromDatabase: true
-        name: mindara-db
-        property: host
+        fromDatabase:
+          name: mindara-db
+          property: host
       - key: DB_PORT
-        fromDatabase: true
-        name: mindara-db
-        property: port
+        fromDatabase:
+          name: mindara-db
+          property: port
     autoDeploy: true
 
 databases:
