@@ -130,6 +130,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise: servir archivos estáticos comprimidos y con hash en producción
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 WHITENOISE_MAX_AGE = 60 * 60 * 24 * 365  # 1 año
+# Permitir servir sin problemas en hosting que hace requests con diferentes origins (opcional)
+WHITENOISE_ALLOW_ALL_ORIGINS = True
+
+# En caso de que surjan errores de manifest en producción (archivos faltantes), podemos forzar fallback a la versión simple:
+if os.environ.get('DISABLE_MANIFEST_STATIC', '0') == '1':
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files (uploaded by users)
 MEDIA_URL = '/media/'

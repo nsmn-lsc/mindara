@@ -43,6 +43,8 @@ services:
         fromDatabase:
           name: mindara-db
           property: port
+      - key: DISABLE_MANIFEST_STATIC
+        value: "1"
     autoDeploy: true
 
 databases:
