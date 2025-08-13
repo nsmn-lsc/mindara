@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import os
 import io
 import locale
-import pytz
+from zoneinfo import ZoneInfo
 
 # Configurar idioma español para fechas
 try:
@@ -62,9 +62,13 @@ def formatear_fecha_hora_espanol(fecha):
     """Formatear fecha y hora en español con zona horaria local"""
     # Convertir a zona horaria local si la fecha está en UTC
     if timezone.is_aware(fecha):
-        # Obtener la zona horaria configurada en Django
-        local_tz = pytz.timezone(settings.TIME_ZONE)
-        fecha_local = fecha.astimezone(local_tz)
+        # Obtener la zona horaria configurada en Django usando zoneinfo (sin pytz)
+        try:
+            local_tz = ZoneInfo(settings.TIME_ZONE)
+            fecha_local = fecha.astimezone(local_tz)
+        except Exception:
+            # Fallback silencioso si la zona no existe; usar fecha tal cual
+            fecha_local = fecha
     else:
         fecha_local = fecha
     
