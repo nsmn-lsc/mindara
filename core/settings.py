@@ -4,6 +4,7 @@ Django settings for Mindara project.
 
 from pathlib import Path
 from decouple import config, Csv
+import mimetypes
 import os
 from urllib.parse import urlparse
 
@@ -40,10 +41,14 @@ INSTALLED_APPS = [
     'apps.reportes',
 ]
 
+# Ajustes de tipos MIME en algunos entornos minimalistas (Render) donde .css/.js pueden resolverse a text/plain
+mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("application/javascript", ".js")
+
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',  # Recomendado primero
+    'whitenoise.middleware.WhiteNoiseMiddleware',     # Justo después de Security
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
