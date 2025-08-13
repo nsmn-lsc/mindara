@@ -47,4 +47,4 @@ services:
 
 databases:
   - name: mindara-db
-    plan: Basic  # Starter es legacy; usar plan soportado (standard)
+    plan: basic  # Starter es legacy; usar plan soportado (standard)
