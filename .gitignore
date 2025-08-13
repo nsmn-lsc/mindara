@@ -9,7 +9,8 @@ __pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/static/
+# No ignorar static para producción (necesario en Render al usar STATICFILES_DIRS)
+# /staticfiles/ se genera en build, puede ignorarse si se desea, pero mantenemos incluido.
 /staticfiles/
 /media/
 

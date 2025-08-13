@@ -1,0 +1,3 @@
+/* Minimal placeholder to avoid 404; FullCalendar injects core styles via JS, but include basic container fixes. */
+.fc { font-family: inherit; }
+.fc .fc-button { cursor: pointer; }
