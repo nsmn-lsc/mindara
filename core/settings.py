@@ -137,12 +137,42 @@ WHITENOISE_ALLOW_ALL_ORIGINS = True
 if os.environ.get('DISABLE_MANIFEST_STATIC', '0') == '1':
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
+# Forzar almacenamiento simple (sin compresión ni manifest) para depuración de 404
+if os.environ.get('FORCE_SIMPLE_STATIC', '0') == '1':
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
 # Media files (uploaded by users)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging para diagnosticar 404 de estáticos en producción
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'whitenoise': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
 
 # Authentication settings
 LOGIN_URL = '/auth/login/'

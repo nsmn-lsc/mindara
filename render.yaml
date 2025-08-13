@@ -8,6 +8,22 @@ services:
       pip install --upgrade pip
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
+      echo "== Diagnóstico staticfiles =="
+      python manage.py findstatic css/mindara.css -v2 || true
+      python manage.py findstatic vendor/bootstrap/5.3.0/bootstrap.min.css -v2 || true
+      ls -lah staticfiles/css || true
+      ls -lah staticfiles/vendor/bootstrap/5.3.0 || true
+      python - <<'EOF'
+import os, json
+targets = [
+  'staticfiles/css/mindara.css',
+  'staticfiles/vendor/bootstrap/5.3.0/bootstrap.min.css',
+  'staticfiles/vendor/fontawesome/6.4.0/css/all.min.css'
+]
+print('STATIC DIAGNOSTIC JSON START')
+print(json.dumps({t: os.path.exists(t) for t in targets}))
+print('STATIC DIAGNOSTIC JSON END')
+EOF
       python manage.py migrate --noinput
     startCommand: gunicorn core.wsgi:application --log-file - --timeout 120 --workers=3
     envVars:
@@ -44,6 +60,8 @@ services:
           name: mindara-db
           property: port
       - key: DISABLE_MANIFEST_STATIC
+        value: "1"
+      - key: FORCE_SIMPLE_STATIC
         value: "1"
     autoDeploy: true
 
