@@ -585,6 +585,20 @@ class AyudaView(TemplateView):
         return context
 
 
+@method_decorator(login_required, name='dispatch')
+class TerminosView(TemplateView):
+    """Página de Términos y Licencia (Apache-2.0)"""
+    template_name = 'frontend/terminos.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': 'Términos y Licencia - Mindara',
+            'ultima_actualizacion': 'Agosto 2025',
+        })
+        return context
+
+
 # === VISTAS DE ADMINISTRACIÓN DE USUARIOS ===
 
 @method_decorator(login_required, name='dispatch')

@@ -16,6 +16,7 @@ urlpatterns = [
     path('dashboard/eventos-usuarios/', views.EventosUsuariosStatsView.as_view(), name='eventos_usuarios_stats'),
     path('logout/', views.logout_view, name='logout'),
     path('ayuda/', views.AyudaView.as_view(), name='ayuda'),
+    path('terminos/', views.TerminosView.as_view(), name='terminos'),
     
     # Gestión de usuarios (solo administradores)
     path('admin/users/', views.UserManagementView.as_view(), name='user_management'),

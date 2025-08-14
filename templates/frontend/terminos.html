@@ -1,0 +1,57 @@
+{% extends 'frontend/base.html' %}
+{% block title %}Términos y Licencia - Mindara{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-3">Términos de Uso y Licencia</h1>
+          <p class="text-muted mb-4">Última actualización: {{ ultima_actualizacion }}</p>
+
+          <h5>Licencia</h5>
+          <p>Este software se distribuye bajo la <strong>Licencia Apache, Versión 2.0</strong>. Puedes usarlo, modificarlo y distribuirlo bajo las condiciones establecidas. Debes conservar los avisos de copyright y la licencia.</p>
+          <p>Texto completo disponible en: <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">https://www.apache.org/licenses/LICENSE-2.0</a> y en el archivo <code>LICENSE</code> del repositorio.</p>
+
+          <h5>Resumen (no sustituye la licencia)</h5>
+          <ul>
+            <li>Uso libre para propósitos personales, internos o comerciales.</li>
+            <li>Puedes crear y distribuir trabajos derivados.</li>
+            <li>Debes incluir una copia de la licencia y avisos de copyright.</li>
+            <li>No hay garantías; el software se entrega "TAL CUAL".</li>
+          </ul>
+
+            <div class="alert alert-warning small">
+              <strong>Nota:</strong> En caso de conflicto entre este resumen y la licencia completa, prevalece el texto íntegro de la Licencia Apache 2.0.
+            </div>
+
+          <h5>Uso Permitido</h5>
+          <p>La plataforma está orientada a la gestión interna de eventos, generación de reportes y análisis estadístico operativo.</p>
+
+          <h5>Restricciones</h5>
+          <ul>
+            <li>No eliminar los avisos de copyright o la licencia en distribuciones.</li>
+            <li>No usar la plataforma para fines ilícitos o para comprometer la seguridad de sistemas y datos.</li>
+            <li>No suplantar identidades ni manipular registros deliberadamente.</li>
+          </ul>
+
+          <h5>Privacidad y Datos</h5>
+          <p>Los datos ingresados (eventos, usuarios, reportes) se procesan únicamente para los fines operativos internos. Si se añade una política de privacidad formal se referenciará aquí.</p>
+
+          <h5>Exención de Garantías</h5>
+          <p>EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍAS DE NINGÚN TIPO, EXPRESAS O IMPLÍCITAS, INCLUYENDO PERO NO LIMITADAS A GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR O NO INFRACCIÓN.</p>
+
+          <h5>Limitación de Responsabilidad</h5>
+          <p>En ningún caso los autores o titulares serán responsables por daños indirectos, incidentales, especiales o consecuenciales derivados del uso o imposibilidad de uso del software.</p>
+
+          <h5>Contacto</h5>
+          <p>Soporte / Administrador: <a href="mailto:develop.serve010@passinbox.com">develop.serve010@passinbox.com</a></p>
+
+          <hr>
+          <p class="small text-muted mb-0">Mindara &mdash; Plataforma de gestión de eventos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
