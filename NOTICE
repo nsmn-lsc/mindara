@@ -1,24 +1,24 @@
 Mindara
 Copyright 2025 Mindara Project Contributors
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+Licenciado bajo la Licencia Apache, Versión 2.0 (la "Licencia");
+no puedes usar este archivo excepto en cumplimiento con la Licencia.
+Puedes obtener una copia de la Licencia en: http://www.apache.org/licenses/LICENSE-2.0
 
-This product includes software developed by third parties:
+Este producto incluye software desarrollado por terceros:
 
-- Django (https://www.djangoproject.com/) - BSD License
-- Django REST Framework (https://www.django-rest-framework.org/) - BSD License
-- Bootstrap (https://getbootstrap.com/) - MIT License
-- Font Awesome Free (https://fontawesome.com) - CC BY 4.0 / MIT (code) (see https://fontawesome.com/license/free)
-- jQuery (https://jquery.com/) - MIT License
-- Chart.js (https://www.chartjs.org/) - MIT License (si se usa en templates)
-- WhiteNoise (http://whitenoise.evans.io) - MIT License
-- OpenPyXL (https://openpyxl.readthedocs.io/) - MIT License
-- ReportLab (https://www.reportlab.com/dev/) - BSD License
-- psycopg2-binary (https://www.psycopg.org/) - LGPL with exceptions
-- djangorestframework-simplejwt - MIT License
+- Django (https://www.djangoproject.com/) - Licencia BSD
+- Django REST Framework (https://www.django-rest-framework.org/) - Licencia BSD
+- Bootstrap (https://getbootstrap.com/) - Licencia MIT
+- Font Awesome Free (https://fontawesome.com) - CC BY 4.0 / MIT (código) (ver https://fontawesome.com/license/free)
+- jQuery (https://jquery.com/) - Licencia MIT
+- Chart.js (https://www.chartjs.org/) - Licencia MIT
+- WhiteNoise (http://whitenoise.evans.io) - Licencia MIT
+- OpenPyXL (https://openpyxl.readthedocs.io/) - Licencia MIT
+- ReportLab (https://www.reportlab.com/dev/) - Licencia BSD
+- psycopg2-binary (https://www.psycopg.org/) - LGPL con excepciones
+- djangorestframework-simplejwt - Licencia MIT
 
-Logos y marcas comerciales mostrados en la interfaz siguen siendo propiedad de sus respectivos titulares.
+Los logos y marcas comerciales mostrados en la interfaz siguen siendo propiedad de sus respectivos titulares.
 
-Any modifications made to included third-party files are documented in the project repository history.
+Cualquier modificación realizada a archivos de terceros incluidos se encuentra documentada en el historial del repositorio.
