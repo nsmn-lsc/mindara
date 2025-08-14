@@ -1,0 +1,24 @@
+Mindara
+Copyright 2025 Mindara Project Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+This product includes software developed by third parties:
+
+- Django (https://www.djangoproject.com/) - BSD License
+- Django REST Framework (https://www.django-rest-framework.org/) - BSD License
+- Bootstrap (https://getbootstrap.com/) - MIT License
+- Font Awesome Free (https://fontawesome.com) - CC BY 4.0 / MIT (code) (see https://fontawesome.com/license/free)
+- jQuery (https://jquery.com/) - MIT License
+- Chart.js (https://www.chartjs.org/) - MIT License (si se usa en templates)
+- WhiteNoise (http://whitenoise.evans.io) - MIT License
+- OpenPyXL (https://openpyxl.readthedocs.io/) - MIT License
+- ReportLab (https://www.reportlab.com/dev/) - BSD License
+- psycopg2-binary (https://www.psycopg.org/) - LGPL with exceptions
+- djangorestframework-simplejwt - MIT License
+
+Logos y marcas comerciales mostrados en la interfaz siguen siendo propiedad de sus respectivos titulares.
+
+Any modifications made to included third-party files are documented in the project repository history.
