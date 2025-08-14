@@ -9,7 +9,7 @@ __pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/static/
+# Versionar assets fuente en static/, ignorar sólo la salida de collectstatic
 /staticfiles/
 /media/
 
