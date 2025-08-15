@@ -50,6 +50,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',     # Justo después de Security
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # Middleware personalizado para expirar sesión tras inactividad
+    'core.middleware.IdleSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -176,6 +178,20 @@ LOGGING = {
         },
     }
 }
+
+# ==========================
+# Configuración de Sesiones
+# ==========================
+# Duración máxima absoluta de la cookie de sesión (8h por defecto)
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=8 * 60 * 60, cast=int)
+# Forzar expiración al cerrar el navegador (mitiga acceso desde equipos compartidos)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Guardar la sesión en cada request para renovar expiración (sliding window)
+SESSION_SAVE_EVERY_REQUEST = True
+# Timeout de inactividad (segundos) para cierre proactivo (30 min por defecto)
+IDLE_SESSION_TIMEOUT = config('IDLE_SESSION_TIMEOUT', default=30 * 60, cast=int)
+# Nombre clave en sesión para tracking de actividad
+IDLE_SESSION_KEY = '_last_activity_ts'
 
 # Authentication settings
 LOGIN_URL = '/auth/login/'
