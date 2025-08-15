@@ -50,11 +50,11 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',     # Justo después de Security
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # Middleware personalizado para expirar sesión tras inactividad
-    'core.middleware.IdleSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Middleware personalizado (requiere request.user ya poblado)
+    'core.middleware.IdleSessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
