@@ -256,6 +256,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     {% endif %}
+
+    // Mostrar alerta si la sesión expiró (parámetro expired=1)
+    try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('expired') === '1') {
+            showAlert('Tu sesión ha expirado por inactividad. Por favor inicia sesión nuevamente.', 'info');
+        }
+    } catch(e) { console.warn('No se pudo procesar parámetros URL', e); }
     
     function setLoadingState(loading) {
         if (loading) {

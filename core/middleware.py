@@ -2,6 +2,8 @@ import time
 from django.conf import settings
 from django.contrib import auth
 from django.utils.deprecation import MiddlewareMixin
+from django.shortcuts import redirect
+from urllib.parse import urlencode
 
 class IdleSessionMiddleware(MiddlewareMixin):
     """Cierra la sesión si el usuario supera el periodo de inactividad definido.
@@ -30,5 +32,12 @@ class IdleSessionMiddleware(MiddlewareMixin):
                 session.flush()
             except Exception:
                 pass
-            return
+            # Diferenciar peticiones AJAX (JSON) y navegación normal
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept','').lower().startswith('application/json'):
+                from django.http import JsonResponse
+                return JsonResponse({'success': False, 'message': 'Sesión expirada por inactividad', 'code': 'session_expired'}, status=401)
+            # Redirigir a login con bandera expired
+            login_url = settings.LOGIN_URL or '/login/'
+            sep = '&' if '?' in login_url else '?'
+            return redirect(f"{login_url}{sep}{urlencode({'expired': 1})}")
         session[key] = now
