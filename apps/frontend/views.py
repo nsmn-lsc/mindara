@@ -335,6 +335,7 @@ class DashboardView(TemplateView):
             'is_basic_user': user.is_basic_user(),
             'total_users': stats.get('total_users', 0),
             'total_eventos': stats.get('total_eventos', 0),
+            'eventos_activos': stats.get('eventos_activos', 0),
             'total_managers': stats.get('manager_users', 0),
             'total_regular_users': stats.get('basic_users', 0),
             'recent_users': self.get_recent_users(user) if user.is_admin() else [],
@@ -529,6 +530,9 @@ def dashboard_stats_api(request):
     API para obtener estadísticas del dashboard
     """
     user = request.user
+    # Importaciones diferidas para evitar costos si no se usan
+    from apps.eventos.models import Evento
+    from apps.notificaciones.models import Notificacion
     
     if user.is_admin():
         # Estadísticas completas para administradores
@@ -543,6 +547,11 @@ def dashboard_stats_api(request):
                 'id', 'username', 'email', 'first_name', 'last_name', 'user_level', 'date_joined'
             )),
         }
+        # Eventos (todos)
+        stats['events_total'] = Evento.objects.count()
+        stats['events_active'] = Evento.objects.filter(etapa__in=['planificacion', 'revision', 'confirmado']).count()
+        # Notificaciones activas visibles para el usuario
+        stats['notifications_active'] = Notificacion.objects.get_for_user(user).count()
     elif user.is_manager():
         # Estadísticas limitadas para managers
         basic_users = User.objects.filter(user_level='USER')
@@ -555,6 +564,13 @@ def dashboard_stats_api(request):
                 'id', 'username', 'email', 'first_name', 'last_name', 'user_level', 'date_joined'
             )),
         }
+        # Eventos (propios y de usuarios básicos/manager)
+        stats['events_total'] = Evento.objects.filter(usuario__user_level__in=['USER', 'MANAGER']).count()
+        stats['events_active'] = Evento.objects.filter(
+            usuario__user_level__in=['USER', 'MANAGER'],
+            etapa__in=['planificacion', 'revision', 'confirmado']
+        ).count()
+        stats['notifications_active'] = Notificacion.objects.get_for_user(user).count()
     else:
         # Solo información personal para usuarios básicos
         stats = {
@@ -562,6 +578,12 @@ def dashboard_stats_api(request):
             'level': user.user_level,
             'date_joined': user.date_joined.isoformat(),
         }
+        stats['events_total'] = Evento.objects.filter(usuario=user).count()
+        stats['events_active'] = Evento.objects.filter(
+            usuario=user,
+            etapa__in=['planificacion', 'revision', 'confirmado']
+        ).count()
+        stats['notifications_active'] = Notificacion.objects.get_for_user(user).count()
     
     return JsonResponse({
         'success': True,

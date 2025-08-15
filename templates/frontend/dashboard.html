@@ -521,20 +521,26 @@ function ocultarBannerNotificaciones() {
 
 // Cargar estadísticas del dashboard
 function loadDashboardStats() {
-    // Aquí se cargarían las estadísticas reales desde la API
-    // Por ahora, simularemos algunos datos
-    setTimeout(() => {
-        const eventosElement = document.getElementById('total-eventos');
-        const usuariosElement = document.getElementById('total-usuarios');
-        
-        if (eventosElement) {
-            eventosElement.textContent = '5';
-        }
-        
-        if (usuariosElement) {
-            usuariosElement.textContent = '12';
-        }
-    }, 1000);
+    fetch('/api/dashboard-stats/', {credentials: 'same-origin'})
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(data => {
+          if (!data.success) return;
+          const stats = data.stats || {};
+          const map = {
+            'total-eventos': stats.events_active || stats.events_total,
+            'total-usuarios': stats.total_users,
+            'total-notificaciones': stats.notifications_active
+          };
+          Object.entries(map).forEach(([id, val]) => {
+              const el = document.getElementById(id);
+              if (el && typeof val !== 'undefined') {
+                  el.textContent = val;
+              }
+          });
+      })
+      .catch(err => {
+          console.warn('Error cargando estadísticas dashboard', err);
+      });
 }
 
 // Cargar eventos agregados por usuario (solo admin/manager)
