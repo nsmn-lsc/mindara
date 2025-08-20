@@ -1538,6 +1538,14 @@ function openEventModal(dateStr = null) {
     // Limpiar el formulario antes de usarlo
     const form = document.getElementById('eventForm');
     form.reset();
+    // Limpiar errores previos (mensajes y estilos)
+    const errorBox = document.getElementById('eventFormErrors');
+    const errorList = document.getElementById('eventFormErrorsList');
+    if (errorBox && !errorBox.classList.contains('d-none')) {
+        errorList.innerHTML = '';
+        errorBox.classList.add('d-none');
+    }
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     
     // Ocultar campos condicionales
     document.getElementById('duracionPersonalizadaGroup').style.display = 'none';
@@ -1564,6 +1572,22 @@ function openEventModal(dateStr = null) {
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     modal.show();
 }
+
+// Asegurar limpieza adicional al cerrar manualmente el modal (por si quedó en estado con errores)
+document.addEventListener('DOMContentLoaded', () => {
+    const eventModalEl = document.getElementById('eventModal');
+    if (eventModalEl) {
+        eventModalEl.addEventListener('hidden.bs.modal', () => {
+            const form = document.getElementById('eventForm');
+            if (!form) return;
+            const errorBox = document.getElementById('eventFormErrors');
+            const errorList = document.getElementById('eventFormErrorsList');
+            if (errorBox) errorBox.classList.add('d-none');
+            if (errorList) errorList.innerHTML = '';
+            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        });
+    }
+});
 
 function showEventDetails(calendarEvent) {
     const evento = allEvents.find(e => e.id == calendarEvent.id);
