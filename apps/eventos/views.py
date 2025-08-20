@@ -391,6 +391,15 @@ def api_eventos(request):
                     'message': 'Formato de fecha u hora inválido'
                 }, status=400)
             
+            # Validar fecha no pasada (regla de negocio)
+            from django.utils import timezone
+            if fecha_parsed < timezone.now().date():
+                return JsonResponse({
+                    'success': False,
+                    'code': 'past_date_not_allowed',
+                    'message': 'La fecha del evento no puede ser en el pasado'
+                }, status=400)
+
             # Crear datos del evento
             evento_data = {
                 'nombre_evento': nombre_evento,
@@ -538,6 +547,15 @@ def api_evento_detail(request, evento_id):
                         'message': 'Formato de fecha u hora inválido'
                     }, status=400)
                 
+                from django.utils import timezone
+                # Validar fecha no pasada (regla de negocio)
+                if fecha_parsed < timezone.now().date():
+                    return JsonResponse({
+                        'success': False,
+                        'code': 'past_date_not_allowed',
+                        'message': 'La fecha del evento no puede ser en el pasado'
+                    }, status=400)
+
                 # Actualizar campos del evento
                 evento.nombre_evento = nombre_evento
                 evento.objetivo = data.get('objetivo', 'Por definir')

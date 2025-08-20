@@ -2208,14 +2208,12 @@ document.getElementById('eventForm').addEventListener('submit', function(e) {
             errors.push('La fecha del evento es obligatoria.');
             fechaInput.classList.add('is-invalid');
         } else {
-            // Validar fecha en pasado solo para creación
-            if (!isEdit) {
-                const today = new Date(); today.setHours(0,0,0,0);
-                const fechaSel = new Date(fechaVal + 'T00:00:00');
-                if (fechaSel < today) {
-                    errors.push('La fecha del evento no puede ser en el pasado.');
-                    fechaInput.classList.add('is-invalid');
-                }
+            // Validar fecha en pasado (aplica a creación y edición completa)
+            const today = new Date(); today.setHours(0,0,0,0);
+            const fechaSel = new Date(fechaVal + 'T00:00:00');
+            if (fechaSel < today) {
+                errors.push('La fecha del evento no puede ser en el pasado.');
+                fechaInput.classList.add('is-invalid');
             }
         }
         if (!data.hora_evento) {

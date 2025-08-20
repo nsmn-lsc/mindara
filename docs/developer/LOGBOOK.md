@@ -60,3 +60,30 @@ Cada fecha incluirá: Contexto, Cambios, Decisiones, Riesgos, Próximos Pasos.
 5. Crear pruebas unitarias para middleware de inactividad (mock de timestamps).
 
 ---
+
+## 2025-08-20
+**Contexto:** Corrección de inconsistencia en regla de negocio: impedir eventos con fecha en el pasado tanto en creación como en edición. Reporte de comportamiento errático del frontend y posibilidad de guardar fechas pasadas al editar.
+
+**Cambios Clave:**
+- `apps/eventos/models.py`: Eliminado default rígido `2025-08-06` por `timezone.now` dinámico; validación de fecha pasada ahora se aplica siempre (quitada condición `if not self.pk`).
+- `apps/eventos/views.py`: Validación explícita en endpoints POST y PUT con código de error `past_date_not_allowed` para respuesta JSON consistente.
+- `templates/eventos/eventos.html`: Validación JS de fecha en pasado extendida también a edición (antes solo creación).
+- Pruebas: Añadido `apps/eventos/tests.py` con 4 tests (crear pasado->400, crear hoy->200, actualizar a pasado->400, actualizar a futuro->200) ejecutadas exitosamente.
+
+**Decisiones:**
+- Centralizar regla en modelo y redundar en API para mensajes claros (defensa en profundidad).
+- Mantener mensaje unificado en español para consistencia UX/API.
+- Añadir código de error para soporte futuro a clientes externos.
+
+**Riesgos / Observaciones:**
+- Cambio de default en modelo requiere migración para reflejar nuevo default a nivel DB (pendiente generar). No bloquea funcionamiento pero recomendable para coherencia de esquemas.
+- Eventos existentes con fecha pasada siguen permitidos (correcto históricamente) — no se fuerza migración retroactiva.
+
+**Próximos Pasos Sugeridos:**
+1. Generar y aplicar migración por cambio de default `fecha_evento`.
+2. Actualizar `CHANGELOG.md` (Unreleased) con fix de validación de fechas.
+3. Considerar restricción adicional: prohibir mover evento confirmado a fecha anterior a hoy (ya cubierto por regla general, validar escenarios edge con TZ).
+4. Revisar TZ: asegurar `USE_TZ=True` y documentación para usuarios en zonas diferentes (normalización al día actual del servidor).
+5. Añadir prueba para intento de editar solo evidencias (parcial) sin afectar validación de fecha.
+
+---

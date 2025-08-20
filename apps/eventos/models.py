@@ -109,8 +109,10 @@ class Evento(models.Model):
     )
     
     # Fechas y horarios
+    # Usar default dinámico; timezone.now devuelve datetime, Django toma la porción de fecha
+    from django.utils import timezone as _tz  # import local to avoid circular issues at import time
     fecha_evento = models.DateField(
-        default='2025-08-06',
+        default=_tz.now,
         verbose_name=_('Fecha del evento'),
         help_text=_('Día en que se realizará el evento')
     )
@@ -321,8 +323,8 @@ class Evento(models.Model):
         from django.core.exceptions import ValidationError
         from django.utils import timezone
         
-        # Validar que la fecha no sea en el pasado (solo para eventos nuevos)
-        if not self.pk and self.fecha_evento < timezone.now().date():
+        # Validar que la fecha no sea en el pasado (aplica para creación y edición)
+        if self.fecha_evento < timezone.now().date():
             raise ValidationError('La fecha del evento no puede ser en el pasado')
         
         # Validar carpeta ejecutiva
