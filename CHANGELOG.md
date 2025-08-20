@@ -4,13 +4,17 @@ Formato basado en Keep a Changelog y Semantic Versioning.
 
 ## [Unreleased]
 ### Added
-- (pendiente)
+- Pruebas automatizadas para validación de fechas de eventos (creación y edición).
 
 ### Changed
-- (pendiente)
+- Validación de fecha de evento movida a aplicar tanto en creación como en edición (regla centralizada en modelo + refuerzo en API).
+- Default de `Evento.fecha_evento` ahora dinámico (`timezone.now`) en lugar de fecha fija.
+- Limpieza automática de mensajes/estilos de error al reabrir/cerrar el modal de eventos para evitar confusión del usuario.
 
 ### Fixed
-- (pendiente)
+- Se impedía (intermitentemente) interpretar que eventos futuros estaban bloqueados tras un intento fallido: ahora el modal se limpia correctamente.
+- Posibilidad de guardar un evento editado con fecha en el pasado (PUT) — ahora rechazado con código `past_date_not_allowed`.
+- Inconsistencia: creación impedía pasado pero edición lo permitía; corregido.
 
 ## [0.2.0] - 2025-08-14
 ### Added
