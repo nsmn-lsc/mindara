@@ -1,6 +1,6 @@
 # Mindara
 
-Proyecto Django configurado con estructura profesional.
+Proyecto Django
 
 ## � Características principales
 
